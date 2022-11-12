@@ -10,6 +10,8 @@ public class PipeMesher : MonoBehaviour
 
     public float waterlevel = 0;
 
+    public Sprite[] numbersSprites = new Sprite[11];
+
     // Start is called before the first frame update
     void Start()
     {
@@ -364,5 +366,7 @@ public class PipeMesher : MonoBehaviour
         {
             jrtimer += Time.deltaTime;
         }
+
+        this.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = numbersSprites[Mathf.FloorToInt(this.waterlevel)];
     }
 }
