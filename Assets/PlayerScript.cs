@@ -251,7 +251,8 @@ public class PlayerScript : MonoBehaviour
                 if (placehit.collider != null)
                 {
                     protectiveTimer = 0;
-                Vector3 thing = placehit.point + (placeray.direction*.1f) ;
+                Vector3 thing = placehit.point + (placeray.direction*.5f) ;
+                Debug.Log("Is this");
                 BreakBlock(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
                 RecheckSurrounders((int)thing.x, (int)thing.y, (int)thing.z);
             }
@@ -302,7 +303,7 @@ public class PlayerScript : MonoBehaviour
             Destroy(draw.worldMachines[thing].linkedObject);
             draw.worldMachines.Remove(thing);
         } else
-        if (thing.y > 1)
+        if (thing.y > 0)
         {
             if (thing.x < 0 && thing.z > 0)
             {
