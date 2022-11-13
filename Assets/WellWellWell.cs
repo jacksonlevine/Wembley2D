@@ -6,6 +6,7 @@ public class WellWellWell : MonoBehaviour
 {
     public Drawer draw;
     public bool isOn = false;
+    public GameObject waterball;
     void Start()
     {
         
@@ -37,6 +38,9 @@ public class WellWellWell : MonoBehaviour
                         {
                             if (draw.worldMachines[me + transform.up].id == 8)
                             {
+                                GameObject wb = Instantiate(waterball, me + transform.up, Quaternion.identity);
+                                wb.SetActive(true);
+                                wb.GetComponent<WaterBall>().myprevpos = me;
                                 thing = true;
                             }
 
@@ -56,7 +60,7 @@ public class WellWellWell : MonoBehaviour
                 if (draw.worldMachines[me + vec].id == 6)
                 {
                     var thisgear = draw.worldMachines[me + vec].linkedObject.GetComponent<DoubleGearController>();
-                    if ((thisgear.is1Running && !thisgear.jam1) || (thisgear.is2Running && !thisgear.jam2))
+                    if ((thisgear.is1Running && !thisgear.jam1) || (thisgear.is2Running && !thisgear.jam2) || (thisgear.is2Running && !thisgear.jam2 && thisgear.is1Running && !thisgear.jam1))
                     {
                         bool thing = false;
                         this.isOn = true;

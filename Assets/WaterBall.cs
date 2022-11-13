@@ -45,9 +45,10 @@ public class WaterBall : MonoBehaviour
             this.myprevpos = this.mymachpos;
             this.transform.position += thing;
             this.mymachpos += thing;
+            this.transform.GetChild(0).gameObject.SetActive(false);
         } else
         {
-
+            this.transform.GetChild(0).gameObject.SetActive(true);
         }
     }
 
