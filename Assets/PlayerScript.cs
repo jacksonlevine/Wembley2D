@@ -575,7 +575,7 @@ public class PlayerScript : MonoBehaviour
                     myInv[selected].amt = 0;
                     myInv[selected].id = 0;
                 }
-                PutDroppedItem(this.transform.position + Camera.main.transform.forward, blockstore.blocks[myInv[selected].id], 1);
+                PutDroppedItem(this.transform.position + (Camera.main.transform.forward*3), blockstore.blocks[myInv[selected].id], 1);
             }
         }
 
