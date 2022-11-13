@@ -251,7 +251,7 @@ public class PlayerScript : MonoBehaviour
                 if (placehit.collider != null)
                 {
                     protectiveTimer = 0;
-                Vector3 thing = placehit.point + (placeray.direction*.5f) ;
+                Vector3 thing = placehit.point + (placeray.direction*.1f) ;
                 Debug.Log("Is this");
                 BreakBlock(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
                 RecheckSurrounders((int)thing.x, (int)thing.y, (int)thing.z);
@@ -284,6 +284,21 @@ public class PlayerScript : MonoBehaviour
 
     }
 
+    void PutDroppedItem(Vector3 thing, Blocks.Block block, int amount)
+    {
+        if (block.id != 0)
+        {
+            GameObject di = Instantiate(droppedItem, thing + transform.up, Quaternion.identity);
+            var drop = di.GetComponent<DroppedItem>();
+            drop.sprite = sprites[block.id];
+            drop.id = block.id;
+            drop.SetTexture();
+            drop.amount = amount;
+        }
+    }
+
+    public GameObject droppedItem;
+
     void BreakBlock(int x, int y, int z)
     {
         bool ismachine = false;
@@ -294,11 +309,11 @@ public class PlayerScript : MonoBehaviour
             ismachine = true;
             if (draw.worldMachines[thing].id == 6)
             {
-                AddToInventory(myInv, blockstore.gearblock.id, 2);
+                PutDroppedItem(thing, blockstore.gearblock, 2);
             }
             else
             {
-                AddToInventory(myInv, draw.worldMachines[thing].id, 1);
+                PutDroppedItem(thing, blockstore.blocks[draw.worldMachines[thing].id], 1);
             }
             Destroy(draw.worldMachines[thing].linkedObject);
             draw.worldMachines.Remove(thing);
@@ -308,37 +323,25 @@ public class PlayerScript : MonoBehaviour
             if (thing.x < 0 && thing.z > 0)
             {
                 block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))];
-                if (AddToInventory(myInv, block.id, 1))
-                {
-                    Debug.Log("Added 1 " + block.id + " to inventory");
-                }
+                PutDroppedItem(thing, block, 1);
                 draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.air;
             }
             if (thing.x < 0 && thing.z < 0)
             {
                 block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))];
-                if (AddToInventory(myInv, block.id, 1))
-                {
-                    Debug.Log("Added 1 " + block.id + " to inventory");
-                }
+                PutDroppedItem(thing, block, 1);
                 draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))] = blockstore.air;
             }
             if (thing.x > 0 && thing.z < 0)
             {
                 block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))];
-                if (AddToInventory(myInv, block.id, 1))
-                {
-                    Debug.Log("Added 1 " + block.id + " to inventory");
-                }
+                PutDroppedItem(thing, block, 1);
                 draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))] = blockstore.air;
             }
             if (thing.x > 0 && thing.z > 0)
             {
                 block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))];
-                if (AddToInventory(myInv, block.id, 1))
-                {
-                    Debug.Log("Added 1 " + block.id + " to inventory");
-                }
+                PutDroppedItem(thing, block, 1);
                 draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.air;
             }
 
@@ -476,7 +479,7 @@ public class PlayerScript : MonoBehaviour
         Debug.Log(thing.x + " " + thing.y + " " + thing.z);
     }
 
-    bool AddToInventory(List<ItemSlot> inv, int type, int amount)
+    public bool AddToInventory(List<ItemSlot> inv, int type, int amount)
     {
         int slottoadd = -1;
 
@@ -504,18 +507,53 @@ public class PlayerScript : MonoBehaviour
 
     }
 
+    public bool AddToInventory(int type, int amount)
+    {
+        int slottoadd = -1;
 
+        for (int i = 0; i < this.myInv.Count; i++)
+        {
+            if (this.myInv[i].id == 0 || this.myInv[i].id == type)
+            {
+                slottoadd = i;
+                break;
+            }
+            else
+            {
+                continue;
+            }
+        }
+        if (slottoadd == -1)
+        {
+            return false;
+        }
+        else
+        {
 
+            this.myInv[slottoadd].id = type;
+            this.myInv[slottoadd].amt += amount;
+            return true;
+        }
+
+    }
+
+    bool letMeDown = false;
     void MovementStuff()
     {
         selected += (int)Input.mouseScrollDelta.y;
         selected = Mathf.Abs(selected) % 7;
         DoBlockPlaceStuff();
 
+        
+        if(Time.time < 20)
+        {
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                letMeDown = true;
+            }
+        }
 
-
-
-        if (Time.time > 20)
+        if (Time.time > 20 || letMeDown)
         {
             if (!cc.isGrounded && this.transform.position.y > 1)
             {
@@ -525,7 +563,21 @@ public class PlayerScript : MonoBehaviour
             }
         }
 
-
+        if(Input.GetKeyDown(KeyCode.Q))
+        {
+            if (myInv[selected].id != 0)
+            {
+                if(myInv[selected].amt > 1)
+                {
+                    myInv[selected].amt--;
+                } else
+                {
+                    myInv[selected].amt = 0;
+                    myInv[selected].id = 0;
+                }
+                PutDroppedItem(this.transform.position + Camera.main.transform.forward, blockstore.blocks[myInv[selected].id], 1);
+            }
+        }
 
         if (velocity != Vector3.zero)
         {
