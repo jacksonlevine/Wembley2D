@@ -367,6 +367,6 @@ public class PipeMesher : MonoBehaviour
             jrtimer += Time.deltaTime;
         }
 
-        this.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = numbersSprites[Mathf.FloorToInt(this.waterlevel)];
+        //this.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = numbersSprites[Mathf.FloorToInt(this.waterlevel)];
     }
 }

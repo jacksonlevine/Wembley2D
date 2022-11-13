@@ -12,6 +12,7 @@ public class WaterBall : MonoBehaviour
         mymachpos = new Vector3(Mathf.FloorToInt(this.transform.position.x), Mathf.FloorToInt(this.transform.position.y), Mathf.FloorToInt(this.transform.position.z));
     }
 
+    public bool leaking = false;
     float movetimer = 0;
     List<Vector3> possibleroutes = new();
     void MoveNext()
@@ -46,11 +47,14 @@ public class WaterBall : MonoBehaviour
             this.transform.position += thing;
             this.mymachpos += thing;
             this.transform.GetChild(0).gameObject.SetActive(false);
+            this.leaking = false;
         } else
         {
             this.transform.GetChild(0).gameObject.SetActive(true);
+            this.leaking = true;
         }
     }
+    float leaktimer = 0;
 
     void Update()
     {
@@ -61,6 +65,17 @@ public class WaterBall : MonoBehaviour
         } else
         {
             movetimer += Time.deltaTime;
+        }
+        if(this.leaking)
+        {
+            if(leaktimer > 2)
+            {
+                Destroy(this.gameObject);
+
+            } else
+            {
+                leaktimer += Time.deltaTime;
+            }
         }
     }
 }
