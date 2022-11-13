@@ -32,6 +32,8 @@ public class PlayerScript : MonoBehaviour
     private Ray r;
     private RaycastHit h;
     public GameObject selectedCube;
+
+    public bool isInventoryOpen = false;
     void DoSelected()
     {
         r.origin = (transform.position + transform.up) + (Camera.main.transform.forward * 0.5f);
@@ -96,16 +98,14 @@ public class PlayerScript : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-
-
-
     Rect position = new(); 
+    float invTileWidth = Screen.width / 32;
     public void DrawItemSlot(ItemSlot slot, Vector2 pos)
     {
             position.x = pos.x;
             position.y = pos.y;
-            position.width = Screen.width / 32;
-            position.height = Screen.width / 32;
+            position.width = invTileWidth;
+            position.height = invTileWidth;
             var pixels1 = sprites[0].texture.GetPixels((int)sprites[0].textureRect.x,
                                                     (int)sprites[0].textureRect.y,
                                                     (int)sprites[0].textureRect.width,
@@ -153,18 +153,65 @@ public class PlayerScript : MonoBehaviour
         GUI.Box(position, GUIContent.none);
 
     }
-
+    public Vector2 mousePosInInvTerms;
     public GUISkin skin;
+    public ItemSlot mousedOverSlot;
+
+    public int mousedSlots = 0;
+    public bool isMouseCurrentlyOnSlot = false;
     private void OnGUI()
     {
         GUI.skin = skin;
-        for(int i = 0; i < 7; i++)
+        mousePosInInvTerms = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
+        mousedSlots = 0;
+
+        if(mouseSlot.id != 0)
         {
-            DrawItemSlot(myInv[i], new Vector2(i * (Screen.width / 24), Screen.height - (Screen.height / 6)));
-            if(selected == i)
+            DrawItemSlot(mouseSlot, mousePosInInvTerms);
+        }
+        for (int i = 0; i < 7; i++)
+        {
+            var spot = new Vector2(i * (Screen.width / 24) + 30, Screen.height - (Screen.height / 6));
+            
+            DrawItemSlot(myInv[i], spot);
+            var centerofspot = new Vector2(spot.x + (invTileWidth/2), spot.y + (invTileWidth / 2));
+            if(selected == i || Vector2.Distance(centerofspot, mousePosInInvTerms) < invTileWidth/2) 
             {
-                DrawSelectedSquare(new Vector2(i * (Screen.width / 24), Screen.height - (Screen.height / 6)));
+                DrawSelectedSquare(spot);
             }
+            if(Vector2.Distance(centerofspot, mousePosInInvTerms) < invTileWidth / 2)
+            {
+                this.mousedOverSlot = myInv[i];
+                mousedSlots++;
+            }
+        }
+
+        if(isInventoryOpen)
+        {
+            for(int i = 7; i < myInv.Count; i++)
+            {
+                var spot = new Vector2(((i % 7) * (Screen.width / 24)) + 30, Screen.height - ((Screen.height / 2)+invTileWidth) + ((i / 7) * invTileWidth*1.2f));
+                var centerofspot = new Vector2(spot.x + (invTileWidth / 2), spot.y + (invTileWidth / 2));
+                DrawItemSlot(myInv[i], spot);
+                if (selected == i || Vector2.Distance(centerofspot, mousePosInInvTerms) < invTileWidth / 2)
+                {
+                    DrawSelectedSquare(spot);
+                }
+                if (Vector2.Distance(centerofspot, mousePosInInvTerms) < invTileWidth / 2)
+                {
+                    this.mousedOverSlot = myInv[i];
+                    mousedSlots++;
+                }
+            }
+        }
+
+
+        if(mousedSlots != 0)
+        {
+            isMouseCurrentlyOnSlot = true;
+        } else
+        {
+            isMouseCurrentlyOnSlot = false;
         }
     }
 
@@ -179,10 +226,12 @@ public class PlayerScript : MonoBehaviour
         myblockpos.x = (int)transform.position.x;
         myblockpos.y = (int)transform.position.y;
         myblockpos.z = (int)transform.position.z;
-        if(Input.GetMouseButtonDown(1)) //right click
+        if (!isInventoryOpen)
         {
-            placed = false;
-                placeray.origin = (transform.position + transform.up) + (Camera.main.transform.forward*0.5f);
+            if (Input.GetMouseButtonDown(1)) //right click
+            {
+                placed = false;
+                placeray.origin = (transform.position + transform.up) + (Camera.main.transform.forward * 0.5f);
                 placeray.direction = Camera.main.transform.forward;
                 Physics.Raycast(placeray, out placehit, 4f);
                 while (placehit.collider == null)
@@ -204,15 +253,15 @@ public class PlayerScript : MonoBehaviour
                 {
                     protectiveTimer = 0;
                     Vector3 thing = placehit.point - (placeray.direction * .1f);
-                if (blockstore.itemIDs.Contains(myInv[selected].id) || Input.GetKey(KeyCode.LeftShift) || myInv[selected].id == 0)
-                {
-                    thing += (placeray.direction * .2f); //go into the block if its an item
-                }
+                    if (blockstore.itemIDs.Contains(myInv[selected].id) || Input.GetKey(KeyCode.LeftShift) || myInv[selected].id == 0)
+                    {
+                        thing += (placeray.direction * .2f); //go into the block if its an item
+                    }
                     Vector3 machspot = new Vector3(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
-                    
+
                     if (SetBlock((int)machspot.x, (int)machspot.y, (int)machspot.z, myInv[selected].id))
                     {
-                    RecheckSurrounders((int)machspot.x, (int)machspot.y, (int)machspot.z);
+                        RecheckSurrounders((int)machspot.x, (int)machspot.y, (int)machspot.z);
                         if (myInv[selected].amt > 1)
                         {
                             myInv[selected].amt--;
@@ -227,10 +276,10 @@ public class PlayerScript : MonoBehaviour
                     Debug.Log(thing.x + " " + thing.y + " " + thing.z);
                 }
 
-        }
+            }
 
-        if (Input.GetMouseButtonDown(0)) //left click
-        {
+            if (Input.GetMouseButtonDown(0)) //left click
+            {
                 placeray.origin = (transform.position + transform.up) + (Camera.main.transform.forward * 0.5f);
                 placeray.direction = Camera.main.transform.forward;
                 Physics.Raycast(placeray, out placehit, 4f);
@@ -251,13 +300,42 @@ public class PlayerScript : MonoBehaviour
                 if (placehit.collider != null)
                 {
                     protectiveTimer = 0;
-                Vector3 thing = placehit.point + (placeray.direction*.1f) ;
-                Debug.Log("Is this");
-                BreakBlock(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
-                RecheckSurrounders((int)thing.x, (int)thing.y, (int)thing.z);
+                    Vector3 thing = placehit.point + (placeray.direction * .1f);
+                    Debug.Log("Is this");
+                    BreakBlock(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
+                    RecheckSurrounders((int)thing.x, (int)thing.y, (int)thing.z);
+                }
+            }
+        } else
+        {
+            if(Input.GetMouseButtonDown(0)) //left click in inventory
+            {
+                if(isMouseCurrentlyOnSlot)
+                {
+                        int currentMouseThing = mouseSlot.id;
+                        int currentMouseAmt = mouseSlot.amt;
+                        mouseSlot.id = mousedOverSlot.id;
+                        mouseSlot.amt = mousedOverSlot.amt;
+                        mousedOverSlot.id = currentMouseThing;
+                        mousedOverSlot.amt = currentMouseAmt;
+                } else
+                {
+                    if(mouseSlot.id != 0)
+                    {
+                        PutDroppedItem(this.transform.position + (transform.forward * 3), blockstore.blocks[mouseSlot.id], mouseSlot.amt);
+                        mouseSlot.id = 0;
+                        mouseSlot.amt = 0;
+                    }
+                }
+            }
+            if (Input.GetMouseButtonDown(1)) //right click in inventory
+            {
+
             }
         }
     }
+
+    public ItemSlot mouseSlot = new();
 
     void RecheckSurrounders(int x, int y, int z)
     {
@@ -598,83 +676,86 @@ public class PlayerScript : MonoBehaviour
             }
         }
 
-        rotation.x = -Input.GetAxis("Mouse Y");
-        rotation.y = Input.GetAxis("Mouse X");
-        rotation.z = 0;
-        var rot = transform.rotation;
-        var rot2 = Camera.main.transform.rotation;
-        this.transform.rotation = Quaternion.Euler(rot.eulerAngles.x, rot.eulerAngles.y + rotation.y, rot.eulerAngles.z + 0);
-        Camera.main.transform.rotation = Quaternion.Euler(rot2.eulerAngles.x + rotation.x, rot2.eulerAngles.y + rotation.y, rot2.eulerAngles.z + 0);
-
-
-
-        if (Input.GetKey(KeyCode.W))
+        if (!isInventoryOpen)
         {
+            rotation.x = -Input.GetAxis("Mouse Y");
+            rotation.y = Input.GetAxis("Mouse X");
+            rotation.z = 0;
+            var rot = transform.rotation;
+            var rot2 = Camera.main.transform.rotation;
+            this.transform.rotation = Quaternion.Euler(rot.eulerAngles.x, rot.eulerAngles.y + rotation.y, rot.eulerAngles.z + 0);
+            Camera.main.transform.rotation = Quaternion.Euler(rot2.eulerAngles.x + rotation.x, rot2.eulerAngles.y + rotation.y, rot2.eulerAngles.z + 0);
 
-            walkray.origin = this.transform.position;
-            walkray.direction = this.transform.forward;
-            Physics.Raycast(walkray, out walkhit, 1f);
-            if (walkhit.collider == null)
-            {
-                movement += (this.transform.forward * Input.GetAxis("Vertical")) / 4;
-            }
-            if (velocity == Vector3.zero)
-            {
-                var thing = transform.position + transform.up;
-                walktime += Time.deltaTime;
-                Camera.main.transform.position = thing + this.transform.right * (Mathf.Sin(walktime * 8) / 8) + (this.transform.up * (Mathf.Sin(walktime * 4) / 8));
-            }
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
 
-            walkrayback.origin = this.transform.position;
-            walkrayback.direction = -1 * this.transform.forward;
-            Physics.Raycast(walkrayback, out walkhitback, 1f);
-            if (walkhitback.collider == null)
-            {
-                movement += (this.transform.forward * Input.GetAxis("Vertical")) / 4;
-            }
-            if (velocity == Vector3.zero)
-            {
-                var thing = transform.position + transform.up;
-                walktime += Time.deltaTime;
-                Camera.main.transform.position = thing + this.transform.right * (Mathf.Sin(walktime * 8) / 8) + (this.transform.up * (Mathf.Sin(walktime * 4) / 8));
-            }
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
 
-            walkrayleft.origin = this.transform.position;
-            walkrayleft.direction = -1 * this.transform.right;
-            Physics.Raycast(walkrayleft, out walkhitleft, 1f);
-            if (walkhitleft.collider == null)
+            if (Input.GetKey(KeyCode.W))
             {
-                movement += (this.transform.right * Input.GetAxis("Horizontal")) / 4;
-            }
-            if (velocity == Vector3.zero)
-            {
-                var thing = transform.position + transform.up;
-                walktime += Time.deltaTime;
-                Camera.main.transform.position = thing + this.transform.right * (Mathf.Sin(walktime * 8) / 8) + (this.transform.up * (Mathf.Sin(walktime * 4) / 8));
-            }
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
 
-            walkrayright.origin = this.transform.position;
-            walkrayright.direction = this.transform.right;
-            Physics.Raycast(walkrayright, out walkhitright, 1f);
-            if (walkhitright.collider == null)
-            {
-                movement += (this.transform.right * Input.GetAxis("Horizontal")) / 4;
-
+                walkray.origin = this.transform.position;
+                walkray.direction = this.transform.forward;
+                Physics.Raycast(walkray, out walkhit, 1f);
+                if (walkhit.collider == null)
+                {
+                    movement += (this.transform.forward * Input.GetAxis("Vertical")) / 4;
+                }
+                if (velocity == Vector3.zero)
+                {
+                    var thing = transform.position + transform.up;
+                    walktime += Time.deltaTime;
+                    Camera.main.transform.position = thing + this.transform.right * (Mathf.Sin(walktime * 8) / 8) + (this.transform.up * (Mathf.Sin(walktime * 4) / 8));
+                }
             }
-            if (velocity == Vector3.zero)
+            if (Input.GetKey(KeyCode.S))
             {
-                var thing = transform.position + transform.up;
-                walktime += Time.deltaTime;
-                Camera.main.transform.position = thing + this.transform.right * (Mathf.Sin(walktime * 8) / 8) + (this.transform.up * (Mathf.Sin(walktime * 4) / 8));
+
+                walkrayback.origin = this.transform.position;
+                walkrayback.direction = -1 * this.transform.forward;
+                Physics.Raycast(walkrayback, out walkhitback, 1f);
+                if (walkhitback.collider == null)
+                {
+                    movement += (this.transform.forward * Input.GetAxis("Vertical")) / 4;
+                }
+                if (velocity == Vector3.zero)
+                {
+                    var thing = transform.position + transform.up;
+                    walktime += Time.deltaTime;
+                    Camera.main.transform.position = thing + this.transform.right * (Mathf.Sin(walktime * 8) / 8) + (this.transform.up * (Mathf.Sin(walktime * 4) / 8));
+                }
+            }
+            if (Input.GetKey(KeyCode.A))
+            {
+
+                walkrayleft.origin = this.transform.position;
+                walkrayleft.direction = -1 * this.transform.right;
+                Physics.Raycast(walkrayleft, out walkhitleft, 1f);
+                if (walkhitleft.collider == null)
+                {
+                    movement += (this.transform.right * Input.GetAxis("Horizontal")) / 4;
+                }
+                if (velocity == Vector3.zero)
+                {
+                    var thing = transform.position + transform.up;
+                    walktime += Time.deltaTime;
+                    Camera.main.transform.position = thing + this.transform.right * (Mathf.Sin(walktime * 8) / 8) + (this.transform.up * (Mathf.Sin(walktime * 4) / 8));
+                }
+            }
+            if (Input.GetKey(KeyCode.D))
+            {
+
+                walkrayright.origin = this.transform.position;
+                walkrayright.direction = this.transform.right;
+                Physics.Raycast(walkrayright, out walkhitright, 1f);
+                if (walkhitright.collider == null)
+                {
+                    movement += (this.transform.right * Input.GetAxis("Horizontal")) / 4;
+
+                }
+                if (velocity == Vector3.zero)
+                {
+                    var thing = transform.position + transform.up;
+                    walktime += Time.deltaTime;
+                    Camera.main.transform.position = thing + this.transform.right * (Mathf.Sin(walktime * 8) / 8) + (this.transform.up * (Mathf.Sin(walktime * 4) / 8));
+                }
             }
         }
         finalray.origin = transform.position;
@@ -701,7 +782,20 @@ public class PlayerScript : MonoBehaviour
     void Update()
     {
         DoSelected();
+
         MovementStuff();
+        if(Input.GetKeyDown(KeyCode.I))
+        {
+            if (!this.isInventoryOpen)
+            {
+                this.isInventoryOpen = true;
+                Cursor.lockState = CursorLockMode.None;
+            } else
+            {
+                this.isInventoryOpen = false;
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+        }
         if ((int)transform.position.x > 0 && (int)transform.position.z > 0)
         {
             for (int i = ((int)transform.position.x - ((int)transform.position.x%16)) - (6 * 16); i < ((int)transform.position.x - ((int)transform.position.x % 16)) + (6 * 16); i++)
