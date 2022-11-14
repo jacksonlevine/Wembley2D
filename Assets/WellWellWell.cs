@@ -40,7 +40,7 @@ public class WellWellWell : MonoBehaviour
                             {
                                 GameObject wb = Instantiate(waterball, me + transform.up, Quaternion.identity);
                                 wb.SetActive(true);
-                                wb.GetComponent<WaterBall>().myprevpos = me;
+                                wb.transform.GetChild(0).GetComponent<WaterBall>().myprevpos = me;
                                 thing = true;
                             }
 

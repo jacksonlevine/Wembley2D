@@ -121,13 +121,13 @@ Material:
     - _Exposure: 1
     - _FlipbookMode: 0
     - _GlossMapScale: 0
-    - _Glossiness: 0
+    - _Glossiness: 0.443
     - _GlossyReflections: 1
     - _ImageType: 0
     - _Layout: 0
     - _LightingEnabled: 1
     - _Mapping: 1
-    - _Metallic: 0
+    - _Metallic: 0.337
     - _MirrorOnBack: 0
     - _Mode: 0
     - _OcclusionStrength: 1

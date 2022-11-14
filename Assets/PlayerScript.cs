@@ -454,21 +454,21 @@ public class PlayerScript : MonoBehaviour
         {
             if (thing.x < 0 && thing.z > 0)
             {
-                block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))];
+                block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(16 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))];
                 PutDroppedItem(thing, block, 1);
-                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.air;
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(16 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.air;
             }
             if (thing.x < 0 && thing.z < 0)
             {
-                block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))];
+                block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(16 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))];
                 PutDroppedItem(thing, block, 1);
-                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))] = blockstore.air;
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(16 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.air;
             }
             if (thing.x > 0 && thing.z < 0)
             {
-                block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))];
+                block = draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))];
                 PutDroppedItem(thing, block, 1);
-                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))] = blockstore.air;
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.air;
             }
             if (thing.x > 0 && thing.z > 0)
             {
@@ -979,11 +979,11 @@ public class PlayerScript : MonoBehaviour
             }
             if (thing.x < 0 && thing.z < 0)
             {
-                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))] = blockstore.blocks[id];
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
             }
             if (thing.x > 0 && thing.z < 0)
             {
-                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 15 + (int)(thing.z % 16))] = blockstore.blocks[id];
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
             }
             if (thing.x > 0 && thing.z > 0)
             {
