@@ -23,6 +23,7 @@ public class DroppedItem : MonoBehaviour
     public void SetTexture()
     {
         texture = new Texture2D(16, 16);
+        texture.filterMode = FilterMode.Point;
         var pixels = sprite.texture.GetPixels((int)sprite.textureRect.x,
                                                     (int)sprite.textureRect.y,
                                                     (int)sprite.textureRect.width,

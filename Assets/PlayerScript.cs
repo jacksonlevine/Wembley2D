@@ -33,6 +33,8 @@ public class PlayerScript : MonoBehaviour
     private RaycastHit h;
     public GameObject selectedCube;
 
+    public List<ItemSlot> currentChestInv;
+
     public bool isInventoryOpen = false;
     void DoSelected()
     {
@@ -91,6 +93,8 @@ public class PlayerScript : MonoBehaviour
         myInv[4].amt = 99;
         myInv[5].id = 9;
         myInv[5].amt = 5;
+        myInv[10].id = 10;
+        myInv[10].amt = 5;
     }
 
     private void OnApplicationFocus(bool focus)
@@ -190,7 +194,7 @@ public class PlayerScript : MonoBehaviour
         {
             for(int i = 7; i < myInv.Count; i++)
             {
-                var spot = new Vector2(((i % 7) * (Screen.width / 24)) + 30, Screen.height - ((Screen.height / 2)+invTileWidth) + ((i / 7) * invTileWidth*1.2f));
+                var spot = new Vector2(((i % 7) * (Screen.width / 24)) + 30, Screen.height - ((Screen.height / 2)+invTileWidth) + ((5-(i / 7)) * invTileWidth*1.2f));
                 var centerofspot = new Vector2(spot.x + (invTileWidth / 2), spot.y + (invTileWidth / 2));
                 DrawItemSlot(myInv[i], spot);
                 if (selected == i || Vector2.Distance(centerofspot, mousePosInInvTerms) < invTileWidth / 2)
@@ -205,8 +209,28 @@ public class PlayerScript : MonoBehaviour
             }
         }
 
+        if (isOtherInventoryOpen)
+        {
+            GUI.Label(new Rect(Screen.width / 3, (Screen.height / 2) + (invTileWidth*2), invTileWidth * 10, invTileWidth), "Trunk:");
+            for (int i = 0; i < currentChestInv.Count; i++)
+            {
+                var spot = new Vector2(((i % 7) * (Screen.width / 24)) + Screen.width/3, Screen.height - ((Screen.height / 2) + invTileWidth) + ((5 - (i / 7)) * invTileWidth * 1.2f));
+                var centerofspot = new Vector2(spot.x + (invTileWidth / 2), spot.y + (invTileWidth / 2));
+                DrawItemSlot(currentChestInv[i], spot);
+                if (selected == i || Vector2.Distance(centerofspot, mousePosInInvTerms) < invTileWidth / 2)
+                {
+                    DrawSelectedSquare(spot);
+                }
+                if (Vector2.Distance(centerofspot, mousePosInInvTerms) < invTileWidth / 2)
+                {
+                    this.mousedOverSlot = currentChestInv[i];
+                    mousedSlots++;
+                }
+            }
+        }
 
-        if(mousedSlots != 0)
+
+        if (mousedSlots != 0)
         {
             isMouseCurrentlyOnSlot = true;
         } else
@@ -221,6 +245,8 @@ public class PlayerScript : MonoBehaviour
     bool machine = false;
     bool placed = false;
     Vector3 myblockpos;
+
+    public bool isOtherInventoryOpen = false;
     void DoBlockPlaceStuff()
     {
         myblockpos.x = (int)transform.position.x;
@@ -252,28 +278,48 @@ public class PlayerScript : MonoBehaviour
                 if (placehit.collider != null)
                 {
                     protectiveTimer = 0;
-                    Vector3 thing = placehit.point - (placeray.direction * .1f);
-                    if (blockstore.itemIDs.Contains(myInv[selected].id) || Input.GetKey(KeyCode.LeftShift) || myInv[selected].id == 0)
+                    Vector3 thing1 = placehit.point + (placeray.direction * .1f);
+                    Vector3 machcheckspot = new Vector3(Mathf.FloorToInt(thing1.x), Mathf.FloorToInt(thing1.y), Mathf.FloorToInt(thing1.z));
+                    bool placing = true;
+                    if (draw.worldMachines.ContainsKey(machcheckspot))
                     {
-                        thing += (placeray.direction * .2f); //go into the block if its an item
-                    }
-                    Vector3 machspot = new Vector3(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
-
-                    if (SetBlock((int)machspot.x, (int)machspot.y, (int)machspot.z, myInv[selected].id))
-                    {
-                        RecheckSurrounders((int)machspot.x, (int)machspot.y, (int)machspot.z);
-                        if (myInv[selected].amt > 1)
+                        if (draw.worldMachines[machcheckspot].id == blockstore.trunk.id)
                         {
-                            myInv[selected].amt--;
-
-                        }
-                        else
+                            placing = false;
+                            isInventoryOpen = true;
+                            isOtherInventoryOpen = true;
+                            Cursor.lockState = CursorLockMode.None;
+                            currentChestInv = draw.worldMachines[machcheckspot].linkedObject.GetComponent<TrunkScript>().myInv;
+                        } else
                         {
-                            myInv[selected].amt = 0;
-                            myInv[selected].id = 0;
+                            placing = true;
                         }
                     }
-                    Debug.Log(thing.x + " " + thing.y + " " + thing.z);
+                    if(placing)
+                    {
+                        Vector3 thing = placehit.point - (placeray.direction * .1f);
+                        if (blockstore.itemIDs.Contains(myInv[selected].id) || Input.GetKey(KeyCode.LeftShift) || myInv[selected].id == 0)
+                        {
+                            thing += (placeray.direction * .2f); //go into the block if its an item
+                        }
+                        Vector3 machspot = new Vector3(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
+
+                        if (SetBlock((int)machspot.x, (int)machspot.y, (int)machspot.z, myInv[selected].id))
+                        {
+                            RecheckSurrounders((int)machspot.x, (int)machspot.y, (int)machspot.z);
+                            if (myInv[selected].amt > 1)
+                            {
+                                myInv[selected].amt--;
+
+                            }
+                            else
+                            {
+                                myInv[selected].amt = 0;
+                                myInv[selected].id = 0;
+                            }
+                        }
+                        Debug.Log(thing.x + " " + thing.y + " " + thing.z);
+                    }
                 }
 
             }
@@ -389,7 +435,15 @@ public class PlayerScript : MonoBehaviour
             {
                 PutDroppedItem(thing, blockstore.gearblock, 2);
             }
-            else
+            else if (draw.worldMachines[thing].id == 10)
+            {
+                var thisinv = draw.worldMachines[thing].linkedObject.GetComponent<TrunkScript>().myInv;
+                PutDroppedItem(thing, blockstore.trunk, 1);
+                for (int i = 0; i < thisinv.Count; i++)
+                {
+                    PutDroppedItem(thing + new Vector3(Random.Range(-1, 1), 0, Random.Range(-1, 1)), blockstore.blocks[thisinv[i].id], thisinv[i].amt);
+                }
+            }else
             {
                 PutDroppedItem(thing, blockstore.blocks[draw.worldMachines[thing].id], 1);
             }
@@ -793,6 +847,7 @@ public class PlayerScript : MonoBehaviour
             } else
             {
                 this.isInventoryOpen = false;
+                isOtherInventoryOpen = false;
                 Cursor.lockState = CursorLockMode.Locked;
             }
         }

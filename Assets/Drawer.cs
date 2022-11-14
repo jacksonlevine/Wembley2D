@@ -52,7 +52,7 @@ public class Drawer : MonoBehaviour
 
     }
 
-    private float rtime = 0.03f;
+    private float rtime = 0.02f;
     void remesh()
      {
 
