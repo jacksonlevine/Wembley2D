@@ -838,11 +838,11 @@ public class PlayerScript : MonoBehaviour
         DoSelected();
         if (myInv[selected].id != 0)
         {
-            this.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = true;
-            this.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = sprites[myInv[selected].id];
+            Camera.main.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = true;
+            Camera.main.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = sprites[myInv[selected].id];
         } else
         {
-            this.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = false;
+            Camera.main.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = false;
         }
         MovementStuff();
         if(Input.GetKeyDown(KeyCode.I))
