@@ -836,7 +836,14 @@ public class PlayerScript : MonoBehaviour
     void Update()
     {
         DoSelected();
-
+        if (myInv[selected].id != 0)
+        {
+            this.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = true;
+            this.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = sprites[myInv[selected].id];
+        } else
+        {
+            this.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = false;
+        }
         MovementStuff();
         if(Input.GetKeyDown(KeyCode.I))
         {
