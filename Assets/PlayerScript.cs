@@ -217,7 +217,7 @@ public class PlayerScript : MonoBehaviour
                 var spot = new Vector2(((i % 7) * (Screen.width / 24)) + Screen.width/3, Screen.height - ((Screen.height / 2) + invTileWidth) + ((5 - (i / 7)) * invTileWidth * 1.2f));
                 var centerofspot = new Vector2(spot.x + (invTileWidth / 2), spot.y + (invTileWidth / 2));
                 DrawItemSlot(currentChestInv[i], spot);
-                if (selected == i || Vector2.Distance(centerofspot, mousePosInInvTerms) < invTileWidth / 2)
+                if (Vector2.Distance(centerofspot, mousePosInInvTerms) < invTileWidth / 2)
                 {
                     DrawSelectedSquare(spot);
                 }
