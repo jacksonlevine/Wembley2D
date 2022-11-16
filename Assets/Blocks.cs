@@ -27,6 +27,9 @@ public class Blocks : MonoBehaviour
     public GameObject trunkobj;
 
 
+    public Block shaft;
+    public GameObject shaftobj;
+
     public Block gearblock;
     public GameObject gear;
 
@@ -128,6 +131,15 @@ public class Blocks : MonoBehaviour
         blocks.Add(trunk.id, trunk);
         modelIDs.Add(10);
         IDtoModel.Add(trunk.id, trunkobj);
+
+        shaft = new Block();
+        shaft.id = 11;
+        shaft.topTex = new Vector2(0, 2f / 16f);
+        shaft.sidesTex = new Vector2(0, 2f / 16f);
+        shaft.bottomTex = new Vector2(0, 2f / 16f);
+        blocks.Add(shaft.id, shaft);
+        modelIDs.Add(11);
+        IDtoModel.Add(shaft.id, shaftobj);
 
         //building the mesh for lever
 

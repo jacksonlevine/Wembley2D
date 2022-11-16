@@ -22,7 +22,7 @@ public class Drawer : MonoBehaviour
         public bool active;
         public float level;
     }
-
+    public GameObject tree;
     // Start is called before the first frame update
     public static float Perlin3D(float x, float y, float z, float scale)
     {
@@ -46,6 +46,18 @@ public class Drawer : MonoBehaviour
                 //GenerateNewWorldDataChunk(i, j);
                 GameObject c = Instantiate(chunk, Vector3.zero + new Vector3(i * 16, 0, j * 16), Quaternion.identity);
                 chunks.Add(new Vector3(i, 0, j), c);
+            }
+        }
+
+        for(int i = 0; i < 40; i++)
+        {
+            for (int j = 0; j < 40; j++)
+            {
+                if(Random.Range(0, 20) < 2)
+                {
+                    GameObject t = Instantiate(tree, new Vector3(i*20, Random.Range(-20, -10), j*20), Quaternion.identity);
+                    t.SetActive(true);
+                }
             }
         }
         

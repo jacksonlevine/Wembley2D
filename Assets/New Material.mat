@@ -10,6 +10,7 @@ Material:
   m_Name: New Material
   m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ValidKeywords:
+  - _ALPHATEST_ON
   - _EMISSION
   - _SPECULARHIGHLIGHTS_OFF
   m_InvalidKeywords:
@@ -18,8 +19,9 @@ Material:
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
+  m_CustomRenderQueue: 2450
+  stringTagMap:
+    RenderType: TransparentCutout
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
@@ -129,7 +131,7 @@ Material:
     - _Mapping: 1
     - _Metallic: 0.337
     - _MirrorOnBack: 0
-    - _Mode: 0
+    - _Mode: 1
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Rotation: 0

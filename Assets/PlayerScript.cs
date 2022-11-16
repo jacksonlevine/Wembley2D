@@ -43,14 +43,25 @@ public class PlayerScript : MonoBehaviour
         Physics.Raycast(r, out h, 30f);
         if(h.collider != null)
         {
-            var thing = h.point + (r.direction * .1f);
-            selectedCube.transform.GetChild(0).transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().enabled = true;
-            selectedCube.transform.GetChild(0).transform.GetChild(1).gameObject.GetComponent<SpriteRenderer>().enabled = true;
-            selectedCube.transform.GetChild(0).transform.GetChild(2).gameObject.GetComponent<SpriteRenderer>().enabled = true;
-            selectedCube.transform.GetChild(0).transform.GetChild(3).gameObject.GetComponent<SpriteRenderer>().enabled = true;
-            selectedCube.transform.GetChild(0).transform.GetChild(4).gameObject.GetComponent<SpriteRenderer>().enabled = true;
-            selectedCube.transform.GetChild(0).transform.GetChild(5).gameObject.GetComponent<SpriteRenderer>().enabled = true;
-            selectedCube.transform.position = new Vector3(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
+            if (h.collider.gameObject.tag != draw.tree.tag)
+            {
+                var thing = h.point + (r.direction * .1f);
+                selectedCube.transform.GetChild(0).transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().enabled = true;
+                selectedCube.transform.GetChild(0).transform.GetChild(1).gameObject.GetComponent<SpriteRenderer>().enabled = true;
+                selectedCube.transform.GetChild(0).transform.GetChild(2).gameObject.GetComponent<SpriteRenderer>().enabled = true;
+                selectedCube.transform.GetChild(0).transform.GetChild(3).gameObject.GetComponent<SpriteRenderer>().enabled = true;
+                selectedCube.transform.GetChild(0).transform.GetChild(4).gameObject.GetComponent<SpriteRenderer>().enabled = true;
+                selectedCube.transform.GetChild(0).transform.GetChild(5).gameObject.GetComponent<SpriteRenderer>().enabled = true;
+                selectedCube.transform.position = new Vector3(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
+            } else
+            {
+                selectedCube.transform.GetChild(0).transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>().enabled = false;
+                selectedCube.transform.GetChild(0).transform.GetChild(1).gameObject.GetComponent<SpriteRenderer>().enabled = false;
+                selectedCube.transform.GetChild(0).transform.GetChild(2).gameObject.GetComponent<SpriteRenderer>().enabled = false;
+                selectedCube.transform.GetChild(0).transform.GetChild(3).gameObject.GetComponent<SpriteRenderer>().enabled = false;
+                selectedCube.transform.GetChild(0).transform.GetChild(4).gameObject.GetComponent<SpriteRenderer>().enabled = false;
+                selectedCube.transform.GetChild(0).transform.GetChild(5).gameObject.GetComponent<SpriteRenderer>().enabled = false;
+            }
         } else
         {
             //selectedCube.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().enabled = false;
@@ -95,6 +106,8 @@ public class PlayerScript : MonoBehaviour
         myInv[5].amt = 5;
         myInv[10].id = 10;
         myInv[10].amt = 5;
+        myInv[11].id = 11;
+        myInv[11].amt = 5;
     }
 
     private void OnApplicationFocus(bool focus)
@@ -347,9 +360,17 @@ public class PlayerScript : MonoBehaviour
                 {
                     protectiveTimer = 0;
                     Vector3 thing = placehit.point + (placeray.direction * .1f);
-                    Debug.Log("Is this");
-                    BreakBlock(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
-                    RecheckSurrounders((int)thing.x, (int)thing.y, (int)thing.z);
+                    if (placehit.collider.gameObject.tag == draw.tree.tag)
+                    {
+                        placehit.collider.gameObject.GetComponent<TreeScript>().FallOver();
+                        //Destroy(placehit.collider.gameObject);
+                    }
+                    else
+                    {
+                        Debug.Log("Is this");
+                        BreakBlock(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
+                        RecheckSurrounders((int)thing.x, (int)thing.y, (int)thing.z);
+                    }
                 }
             }
         } else
@@ -476,7 +497,6 @@ public class PlayerScript : MonoBehaviour
                 PutDroppedItem(thing, block, 1);
                 draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.air;
             }
-
         }
 
         //block = blockstore.air;
@@ -970,6 +990,7 @@ public class PlayerScript : MonoBehaviour
     {
         Vector3 thing = new Vector3(x, y, z);
         Vector3 machspot = thing;
+        bool machThatNeedsRemesh = false;
         if (!blockstore.modelIDs.Contains(id) && !blockstore.itemIDs.Contains(id) && myblockpos != machspot && id != 0)
         {
             machine = false;
@@ -1000,6 +1021,27 @@ public class PlayerScript : MonoBehaviour
                 thismach.id = id;
                 thismach.linkedObject = g;
                 draw.worldMachines.Add(machspot, thismach);
+                if(id == 11)
+                {
+                    machThatNeedsRemesh = true;
+
+                    if (thing.x < 0 && thing.z > 0)
+                    {
+                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
+                    }
+                    if (thing.x < 0 && thing.z < 0)
+                    {
+                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
+                    }
+                    if (thing.x > 0 && thing.z < 0)
+                    {
+                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
+                    }
+                    if (thing.x > 0 && thing.z > 0)
+                    {
+                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
+                    }
+                }
 
             } else 
             {
@@ -1061,7 +1103,7 @@ public class PlayerScript : MonoBehaviour
             return false;
         }
 
-        if (!machine)
+        if (!machine || machThatNeedsRemesh == true)
         {
             draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
             if ((int)(thing.x % 16) == 15)
