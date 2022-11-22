@@ -17,6 +17,8 @@ public class PlayerScript : MonoBehaviour
 
     private float walktime = 0;
 
+    public int dimension = 0;
+
     public Ray walkray = new Ray();
     public Ray walkrayleft = new Ray();
     public Ray walkrayright = new Ray();
@@ -29,11 +31,16 @@ public class PlayerScript : MonoBehaviour
     private RaycastHit finalhit;
     public CharacterController cc;
 
+    public Texture2D[] skyBoxTextures = new Texture2D[2];
+
+
     private Ray r;
     private RaycastHit h;
     public GameObject selectedCube;
 
     public List<ItemSlot> currentChestInv;
+
+    public bool isLoading = false;
 
     public bool isInventoryOpen = false;
     void DoSelected()
@@ -77,6 +84,7 @@ public class PlayerScript : MonoBehaviour
 
     void Start()
     {
+        Camera.main.gameObject.GetComponent<Skybox>().material.SetTexture("_MainTex", skyBoxTextures[0]);
         cc = this.gameObject.GetComponent<CharacterController>();
         for(int i = 0; i < 35; i++)
         {
@@ -108,6 +116,8 @@ public class PlayerScript : MonoBehaviour
         myInv[10].amt = 5;
         myInv[11].id = 11;
         myInv[11].amt = 5;
+        myInv[12].id = 12;
+        myInv[12].amt = 1;
     }
 
     private void OnApplicationFocus(bool focus)
@@ -176,11 +186,66 @@ public class PlayerScript : MonoBehaviour
 
     public int mousedSlots = 0;
     public bool isMouseCurrentlyOnSlot = false;
+
+    public void SwitchDimension()
+    {
+        cc.Move(transform.up * 20);
+
+        //unload all these
+        if (draw.worldMachines.ContainsKey(draw.dimension))
+        {
+            foreach (KeyValuePair<Vector3, Drawer.MachineNode> mach in draw.worldMachines[draw.dimension])
+            {
+                mach.Value.linkedObject.gameObject.SetActive(false);
+            }
+        }
+
+
+        if (Input.GetKey(KeyCode.LeftShift) && draw.dimension > 0)
+        {
+            draw.dimension--;
+        }
+        else
+        {
+            draw.dimension++;
+        }
+        if (draw.dimension == 0)
+        {
+            Camera.main.gameObject.GetComponent<Skybox>().material.SetTexture("_MainTex", skyBoxTextures[0]);
+        }
+        else
+        {
+            Camera.main.gameObject.GetComponent<Skybox>().material.SetTexture("_MainTex", skyBoxTextures[1]);
+        }
+        draw.remeshQueue.Clear();
+
+
+        foreach (KeyValuePair<Vector3, GameObject> chuk in draw.chunks)
+        {
+            chuk.Value.GetComponent<ChunkTerrain>().isInRemeshQueue = false;
+            chuk.Value.GetComponent<ChunkTerrain>().OnInstantiate();
+        }
+
+        //load all these
+        if (draw.worldMachines.ContainsKey(draw.dimension))
+        {
+            foreach (KeyValuePair<Vector3, Drawer.MachineNode> mach in draw.worldMachines[draw.dimension])
+            {
+                mach.Value.linkedObject.gameObject.SetActive(true);
+            }
+        }
+    }
     private void OnGUI()
     {
         GUI.skin = skin;
         mousePosInInvTerms = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
         mousedSlots = 0;
+
+        if(isLoading)
+        {
+            GUI.Label(new Rect(200, 10, 300, 30), "Loading world...");
+        }
+
 
         if(mouseSlot.id != 0)
         {
@@ -265,10 +330,20 @@ public class PlayerScript : MonoBehaviour
         myblockpos.x = (int)transform.position.x;
         myblockpos.y = (int)transform.position.y;
         myblockpos.z = (int)transform.position.z;
+        if(!draw.worldMachines.ContainsKey(dimension))
+        {
+            draw.worldMachines.Add(dimension, new Dictionary<Vector3, Drawer.MachineNode>());
+        }
         if (!isInventoryOpen)
         {
             if (Input.GetMouseButtonDown(1)) //right click
             {
+                if (myInv[selected].id == blockstore.gunItem.id)
+                {
+                    GameObject d = Instantiate(blockstore.bullet, this.transform.position, Quaternion.identity);
+                    d.GetComponent<BulletScript>().direction = Camera.main.transform.forward;
+                    d.GetComponent<BulletScript>().isOriginal = false;
+                }
                 placed = false;
                 placeray.origin = (transform.position + transform.up) + (Camera.main.transform.forward * 0.5f);
                 placeray.direction = Camera.main.transform.forward;
@@ -294,19 +369,41 @@ public class PlayerScript : MonoBehaviour
                     Vector3 thing1 = placehit.point + (placeray.direction * .1f);
                     Vector3 machcheckspot = new Vector3(Mathf.FloorToInt(thing1.x), Mathf.FloorToInt(thing1.y), Mathf.FloorToInt(thing1.z));
                     bool placing = true;
-                    if (draw.worldMachines.ContainsKey(machcheckspot))
+                    if (draw.worldMachines[dimension].ContainsKey(machcheckspot))
                     {
-                        if (draw.worldMachines[machcheckspot].id == blockstore.trunk.id)
+                        if (draw.worldMachines[dimension][machcheckspot].id == blockstore.trunk.id)
                         {
                             placing = false;
                             isInventoryOpen = true;
                             isOtherInventoryOpen = true;
                             Cursor.lockState = CursorLockMode.None;
-                            currentChestInv = draw.worldMachines[machcheckspot].linkedObject.GetComponent<TrunkScript>().myInv;
+                            currentChestInv = draw.worldMachines[dimension][machcheckspot].linkedObject.GetComponent<TrunkScript>().myInv;
                         } else
+                        if (draw.worldMachines[dimension][machcheckspot].id == blockstore.shaft.id)
+                        {
+                            SwitchDimension();
+                            
+                        }else
                         {
                             placing = true;
                         }
+                    }
+                    if (myInv[selected].id == blockstore.shaft.id)
+                    {
+                        placing = false;
+                        RemoveBlock(Mathf.FloorToInt(thing1.x), Mathf.FloorToInt(thing1.y), Mathf.FloorToInt(thing1.z));
+                        SetBlock(Mathf.FloorToInt(thing1.x), Mathf.FloorToInt(thing1.y), Mathf.FloorToInt(thing1.z), blockstore.shaft.id);
+                        if (myInv[selected].amt > 1)
+                            {
+                                myInv[selected].amt--;
+
+                            }
+                            else
+                            {
+                                myInv[selected].amt = 0;
+                                myInv[selected].id = 0;
+                            }
+                        
                     }
                     if(placing)
                     {
@@ -331,7 +428,7 @@ public class PlayerScript : MonoBehaviour
                                 myInv[selected].id = 0;
                             }
                         }
-                        Debug.Log(thing.x + " " + thing.y + " " + thing.z);
+                        //Debug.Log(thing.x + " " + thing.y + " " + thing.z);
                     }
                 }
 
@@ -418,11 +515,11 @@ public class PlayerScript : MonoBehaviour
         };
         foreach(Vector3 vec in vecs)
         {
-            if(draw.worldMachines.ContainsKey(thing + vec))
+            if(draw.worldMachines[dimension].ContainsKey(thing + vec))
             {
-                if (draw.worldMachines[thing + vec].id == 8)
+                if (draw.worldMachines[dimension][thing + vec].id == 8)
                 {
-                    draw.worldMachines[thing + vec].linkedObject.GetComponent<PipeMesher>().Remesh();
+                    draw.worldMachines[dimension][thing + vec].linkedObject.GetComponent<PipeMesher>().Remesh();
                 }
             }
         }
@@ -449,16 +546,16 @@ public class PlayerScript : MonoBehaviour
         bool ismachine = false;
         Vector3 thing = new(x, y, z);
         Blocks.Block block;
-        if(draw.worldMachines.ContainsKey(thing))
+        if(draw.worldMachines[dimension].ContainsKey(thing))
         {
             ismachine = true;
-            if (draw.worldMachines[thing].id == 6)
+            if (draw.worldMachines[dimension][thing].id == 6)
             {
                 PutDroppedItem(thing, blockstore.gearblock, 2);
             }
-            else if (draw.worldMachines[thing].id == 10)
+            else if (draw.worldMachines[dimension][thing].id == 10)
             {
-                var thisinv = draw.worldMachines[thing].linkedObject.GetComponent<TrunkScript>().myInv;
+                var thisinv = draw.worldMachines[dimension][thing].linkedObject.GetComponent<TrunkScript>().myInv;
                 PutDroppedItem(thing, blockstore.trunk, 1);
                 for (int i = 0; i < thisinv.Count; i++)
                 {
@@ -466,10 +563,10 @@ public class PlayerScript : MonoBehaviour
                 }
             }else
             {
-                PutDroppedItem(thing, blockstore.blocks[draw.worldMachines[thing].id], 1);
+                PutDroppedItem(thing, blockstore.blocks[draw.worldMachines[dimension][thing].id], 1);
             }
-            Destroy(draw.worldMachines[thing].linkedObject);
-            draw.worldMachines.Remove(thing);
+            Destroy(draw.worldMachines[dimension][thing].linkedObject);
+            draw.worldMachines[dimension].Remove(thing);
         } else
         if (thing.y > 0)
         {
@@ -705,9 +802,10 @@ public class PlayerScript : MonoBehaviour
             }
         }
 
+
         if (Time.time > 20 || letMeDown)
         {
-            if (!cc.isGrounded && this.transform.position.y > 1)
+            if (!cc.isGrounded && this.transform.position.y >= 1)
             {
                 timefalling += Time.deltaTime * 230;
                 velocity.y -= Time.deltaTime * (15 + timefalling);
@@ -740,7 +838,7 @@ public class PlayerScript : MonoBehaviour
 
         }
 
-        if (cc.isGrounded || this.transform.position.y <= 1)
+        if (cc.isGrounded || this.transform.position.y <= 1.1)
         {
             timefalling = 0;
             velocity.y = Mathf.Clamp(velocity.y, 0, 10);
@@ -855,6 +953,15 @@ public class PlayerScript : MonoBehaviour
     public List<Vector2> neededChunks = new();
     void Update()
     {
+        this.dimension = draw.dimension;
+        if (draw.remeshQueue.Count > 50)
+        {
+            isLoading = true;
+
+        } else
+        {
+            isLoading = false;
+        }
         DoSelected();
         if (myInv[selected].id != 0)
         {
@@ -864,7 +971,10 @@ public class PlayerScript : MonoBehaviour
         {
             Camera.main.transform.GetChild(0).GetComponent<SpriteRenderer>().enabled = false;
         }
-        MovementStuff();
+        if (!isLoading)
+        {
+            MovementStuff();
+        }
         if(Input.GetKeyDown(KeyCode.I))
         {
             if (!this.isInventoryOpen)
@@ -1014,13 +1124,13 @@ public class PlayerScript : MonoBehaviour
         else if (!blockstore.itemIDs.Contains(id) && blockstore.modelIDs.Contains(id))
         {
             machine = true;
-            if (!draw.worldMachines.ContainsKey(machspot))
+            if (!draw.worldMachines[dimension].ContainsKey(machspot))
             {
                 GameObject g = Instantiate(blockstore.IDtoModel[id], machspot, Quaternion.identity);
                 Drawer.MachineNode thismach = new Drawer.MachineNode();
                 thismach.id = id;
                 thismach.linkedObject = g;
-                draw.worldMachines.Add(machspot, thismach);
+                draw.worldMachines[dimension].Add(machspot, thismach);
                 if(id == 11)
                 {
                     machThatNeedsRemesh = true;
@@ -1045,17 +1155,17 @@ public class PlayerScript : MonoBehaviour
 
             } else 
             {
-                if (draw.worldMachines[machspot].id == blockstore.gearblock.id)
+                if (draw.worldMachines[dimension][machspot].id == blockstore.gearblock.id)
                 {
                     if (id == 4)
                     {
-                        Destroy(draw.worldMachines[machspot].linkedObject);
-                        draw.worldMachines.Remove(machspot);
+                        Destroy(draw.worldMachines[dimension][machspot].linkedObject);
+                        draw.worldMachines[dimension].Remove(machspot);
                         GameObject g = Instantiate(blockstore.IDtoModel[6], machspot, Quaternion.identity);
                         Drawer.MachineNode thismach = new Drawer.MachineNode();
                         thismach.id = 6;
                         thismach.linkedObject = g;
-                        draw.worldMachines.Add(machspot, thismach);
+                        draw.worldMachines[dimension].Add(machspot, thismach);
                     }
                 }
             }
@@ -1066,38 +1176,39 @@ public class PlayerScript : MonoBehaviour
         {
             if (id == blockstore.wrenchItem.id)
             {
-                if (draw.worldMachines.ContainsKey(thing))
+                if (draw.worldMachines[dimension].ContainsKey(thing))
                 {
-                    if (draw.worldMachines[thing].id == 4)
+                    if (draw.worldMachines[dimension][thing].id == 4)
                     {
-                        var t = draw.worldMachines[thing].linkedObject.GetComponent<GearController>().rotationIndex;
-                        draw.worldMachines[thing].linkedObject.GetComponent<GearController>().UpdateRotIndex((t + 1) % 6);
+                        var t = draw.worldMachines[dimension][thing].linkedObject.GetComponent<GearController>().rotationIndex;
+                        draw.worldMachines[dimension][thing].linkedObject.GetComponent<GearController>().UpdateRotIndex((t + 1) % 6);
                     }
-                    if (draw.worldMachines[thing].id == 6)
+                    if (draw.worldMachines[dimension][thing].id == 6)
                     {
-                        var t = draw.worldMachines[thing].linkedObject.GetComponent<DoubleGearController>().rotationIndex;
-                        var t2 = draw.worldMachines[thing].linkedObject.GetComponent<DoubleGearController>().rotationIndex2;
+                        var t = draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().rotationIndex;
+                        var t2 = draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().rotationIndex2;
                         if (Input.GetKey(KeyCode.LeftShift))
                         {
-                            draw.worldMachines[thing].linkedObject.GetComponent<DoubleGearController>().UpdateRot2Index((t2 + 1) % 6);
+                            draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().UpdateRot2Index((t2 + 1) % 6);
                         }
                         else
                         {
-                            draw.worldMachines[thing].linkedObject.GetComponent<DoubleGearController>().UpdateRot1Index((t + 1) % 6);
+                            draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().UpdateRot1Index((t + 1) % 6);
                         }
                     }
                 }
                 
             }
+            
             return false;
         }
         else if(id == 0)
         {
-            if (draw.worldMachines.ContainsKey(machspot))
+            if (draw.worldMachines[dimension].ContainsKey(machspot))
             {
-                if (draw.worldMachines[machspot].id == blockstore.leverItem.id)
+                if (draw.worldMachines[dimension][machspot].id == blockstore.leverItem.id)
                 {
-                    draw.worldMachines[machspot].linkedObject.GetComponent<LeverWorker>().Toggle();
+                    draw.worldMachines[dimension][machspot].linkedObject.GetComponent<LeverWorker>().Toggle();
                 }
             }
             return false;
@@ -1139,4 +1250,60 @@ public class PlayerScript : MonoBehaviour
         return false;
        
     }
+
+    public void RemoveBlock(int x, int y, int z)
+    {
+        Vector3 thing = new Vector3(x, y, z);
+        Vector3 machspot = thing;
+
+            if (thing.x < 0 && thing.z > 0)
+            {
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.air;
+            }
+            if (thing.x < 0 && thing.z < 0)
+            {
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.air;
+            }
+            if (thing.x > 0 && thing.z < 0)
+            {
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.air;
+            }
+            if (thing.x > 0 && thing.z > 0)
+            {
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.air;
+            }
+
+
+            draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
+            if ((int)(thing.x % 16) == 15)
+            {
+                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16) + 1, 0, Mathf.FloorToInt(thing.z / 16))))
+                {
+                    draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) + 1, 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
+                }
+            }
+            if ((int)(thing.x % 16) == 0)
+            {
+                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16) - 1, 0, Mathf.FloorToInt(thing.z / 16))))
+                {
+                    draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) - 1, 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
+                }
+            }
+            if ((int)(thing.z % 16) == 15)
+            {
+                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) + 1)))
+                {
+                    draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) + 1)].GetComponent<ChunkTerrain>().RebuildMesh();
+                }
+            }
+            if ((int)(thing.z % 16) == 0)
+            {
+                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) - 1)))
+                {
+                    draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) - 1)].GetComponent<ChunkTerrain>().RebuildMesh();
+                }
+            }
+        }
+
+
 }

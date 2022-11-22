@@ -14,15 +14,21 @@ public class GearController : MonoBehaviour
     public bool jam = false;
     public bool unjam = false;
 
+    public int dimension = 0;
+
     public void GetSurrounders()
     {
         Vector3 vec = new Vector3((int)this.transform.position.x, (int)this.transform.position.y, (int)this.transform.position.z);
         vec.x++;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (!draw.worldMachines.ContainsKey(dimension))
         {
-            if (draw.worldMachines[vec].id == 4)
+            draw.worldMachines.Add(dimension, new System.Collections.Generic.Dictionary<Vector3, Drawer.MachineNode>());
+        }
+        if (draw.worldMachines[dimension].ContainsKey(vec))
+        {
+            if (draw.worldMachines[dimension][vec].id == 4)
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<GearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 0 && this.rotationIndex != 3)
                 {
                     if (gear.isRunning && !gear.jam) 
@@ -37,9 +43,9 @@ public class GearController : MonoBehaviour
                     }
                 }
             }
-            if (draw.worldMachines[vec].id == 6) //double gear
+            if (draw.worldMachines[dimension][vec].id == 6) //double gear
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 0 && this.rotationIndex != 3)
                 {
                     if (gear.is1Running && !gear.jam1)
@@ -71,11 +77,11 @@ public class GearController : MonoBehaviour
             }
         }
         vec.x -= 2;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (draw.worldMachines[vec].id == 4)
+            if (draw.worldMachines[dimension][vec].id == 4)
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<GearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 0 && this.rotationIndex != 3)
                 {
                     if (gear.isRunning && !gear.jam)
@@ -91,9 +97,9 @@ public class GearController : MonoBehaviour
                     }
                 }
             }
-            if (draw.worldMachines[vec].id == 6) //double gear
+            if (draw.worldMachines[dimension][vec].id == 6) //double gear
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 0 && this.rotationIndex != 3)
                 {
                     if (gear.is1Running && !gear.jam1)
@@ -126,11 +132,11 @@ public class GearController : MonoBehaviour
         }
         vec.x++; //reset
         vec.y++;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (draw.worldMachines[vec].id == 4)
+            if (draw.worldMachines[dimension][vec].id == 4)
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<GearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 5 && this.rotationIndex != 2)
                 {
                     if (gear.isRunning && !gear.jam)
@@ -146,9 +152,9 @@ public class GearController : MonoBehaviour
                     }
                 }
             }
-            if (draw.worldMachines[vec].id == 6) //double gear
+            if (draw.worldMachines[dimension][vec].id == 6) //double gear
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 5 && this.rotationIndex != 2)
                 {
                     if (gear.is1Running && !gear.jam1)
@@ -180,11 +186,11 @@ public class GearController : MonoBehaviour
             }
         }
         vec.y-=2;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (draw.worldMachines[vec].id == 4)
+            if (draw.worldMachines[dimension][vec].id == 4)
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<GearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 5 && this.rotationIndex != 2)
                 {
                     if (gear.isRunning && !gear.jam)
@@ -200,9 +206,9 @@ public class GearController : MonoBehaviour
                     }
                 }
             }
-            if (draw.worldMachines[vec].id == 6) //double gear
+            if (draw.worldMachines[dimension][vec].id == 6) //double gear
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 5 && this.rotationIndex != 2)
                 {
                     if (gear.is1Running && !gear.jam1)
@@ -235,11 +241,11 @@ public class GearController : MonoBehaviour
         }
         vec.y++; //reset
         vec.z++;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (draw.worldMachines[vec].id == 4)
+            if (draw.worldMachines[dimension][vec].id == 4)
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<GearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 4 && this.rotationIndex != 1)
                 {
                     if (gear.isRunning && !gear.jam)
@@ -255,9 +261,9 @@ public class GearController : MonoBehaviour
                     }
                 }
             }
-            if (draw.worldMachines[vec].id == 6) //double gear
+            if (draw.worldMachines[dimension][vec].id == 6) //double gear
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 4 && this.rotationIndex != 1)
                 {
                     if (gear.is1Running && !gear.jam1)
@@ -289,11 +295,11 @@ public class GearController : MonoBehaviour
             }
         }
         vec.z -= 2;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (draw.worldMachines[vec].id == 4)
+            if (draw.worldMachines[dimension][vec].id == 4)
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<GearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 4 && this.rotationIndex != 1)
                 {
                     if (gear.isRunning && !gear.jam)
@@ -309,9 +315,9 @@ public class GearController : MonoBehaviour
                     }
                 }
             }
-            if (draw.worldMachines[vec].id == 6) //double gear
+            if (draw.worldMachines[dimension][vec].id == 6) //double gear
             {
-                var gear = draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>();
+                var gear = draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>();
                 if (gear.rotationIndex == this.rotationIndex && this.rotationIndex != 4 && this.rotationIndex != 1)
                 {
                     if (gear.is1Running && !gear.jam1)

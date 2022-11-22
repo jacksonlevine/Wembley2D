@@ -10,10 +10,27 @@ public class Drawer : MonoBehaviour
 
     public Transform player;
 
+
+
+
+
+    public int dimension = 0;
+
+
+
+
+
+
+
     public List<GameObject> remeshQueue = new();
     private float remeshTimer = 0;
-    public Dictionary<Vector2, Dictionary<Vector3, Blocks.Block>> worldAllChunks = new();
-    public Dictionary<Vector3, MachineNode> worldMachines = new();
+    public Dictionary<int, Dictionary<Vector2, Dictionary<Vector3, Blocks.Block>>> worldAllChunks = new();
+
+
+
+
+
+    public Dictionary<int, Dictionary<Vector3, MachineNode>> worldMachines = new();
     
     public struct MachineNode
     {
@@ -49,7 +66,7 @@ public class Drawer : MonoBehaviour
             }
         }
 
-        for(int i = 0; i < 40; i++)
+       /* for(int i = 0; i < 40; i++)
         {
             for (int j = 0; j < 40; j++)
             {
@@ -59,12 +76,12 @@ public class Drawer : MonoBehaviour
                     t.SetActive(true);
                 }
             }
-        }
+        }*/
         
 
     }
 
-    private float rtime = 0.02f;
+    private float rtime = 0.015f;
     void remesh()
      {
 
@@ -95,7 +112,7 @@ public class Drawer : MonoBehaviour
 
     Vector2 cp = new();
     Vector3 vec = new();
-    public void GenerateNewWorldDataChunk(int x, int z)
+    public void GenerateNewWorldDataChunk(int x, int z, int dimen)
     {
         cp.x = x;
         cp.y = z;
@@ -125,45 +142,95 @@ public class Drawer : MonoBehaviour
 
             }
         }*/
-
-        for (int i = 0; i < 16; i++)
+        if (dimen == 0)
         {
-            
+            for (int i = 0; i < 16; i++)
+            {
+
                 for (int k = 0; k < 16; k++)
                 {
-                for (int j = 0; j < 65; j++)
-                {
-                    vec.x = i;
-                    vec.y = j;
-                    vec.z = k;
-                        if (j < (Mathf.PerlinNoise((float)((x * 16) + vec.x) / 30f, (float)((z * 16) + vec.z) / 30f)*2))
+                    for (int j = 0; j < 65; j++)
+                    {
+                        vec.x = i;
+                        vec.y = j;
+                        vec.z = k;
+                        if (j < (Mathf.PerlinNoise((dimension * 100)+(float)((x * 16) + vec.x) / 30f, (dimension * 100)+(float)((z * 16) + vec.z) / 30f) * 2))
                         {
-                        if (thechunk.ContainsKey(vec))
-                        {
-                            thechunk[vec] = blockstore.block;
-                        } else
-                        {
-                            thechunk.Add(vec, blockstore.block);
-                        }
+                            if (thechunk.ContainsKey(vec))
+                            {
+                                thechunk[vec] = blockstore.block;
+                            }
+                            else
+                            {
+                                thechunk.Add(vec, blockstore.block);
+                            }
                             vec.y = j - 1;
-                        if (thechunk.ContainsKey(vec))
-                        {
-                            thechunk[vec] = blockstore.dirt;
-                        } else
-                        {
-                            thechunk.Add(vec, blockstore.dirt);
-                        }
+                            if (thechunk.ContainsKey(vec))
+                            {
+                                thechunk[vec] = blockstore.dirt;
+                            }
+                            else
+                            {
+                                thechunk.Add(vec, blockstore.dirt);
+                            }
                         }
                         else
                         {
                             thechunk.Add(vec, blockstore.air);
                         }
 
+                    }
+                }
+            }
+        } else
+        {
+            for (int i = 0; i < 16; i++)
+            {
+
+                for (int k = 0; k < 16; k++)
+                {
+                    for (int j = 0; j < 65; j++)
+                    {
+                        vec.x = i;
+                        vec.y = j;
+                        vec.z = k;
+                        if (j < (Mathf.PerlinNoise((dimension*100)+(float)((x * 16) + vec.x) / 3f, (dimension * 100) + (float)((z * 16) + vec.z) / 3f) * 4))
+                        {
+                            if (thechunk.ContainsKey(vec))
+                            {
+                                thechunk[vec] = blockstore.stone;
+                            }
+                            else
+                            {
+                                thechunk.Add(vec, blockstore.stone);
+                            }
+                            vec.y = j - 1;
+                            if (thechunk.ContainsKey(vec))
+                            {
+                                thechunk[vec] = blockstore.dirt;
+                            }
+                            else
+                            {
+                                thechunk.Add(vec, blockstore.dirt);
+                            }
+                        }
+                        else
+                        {
+                            thechunk.Add(vec, blockstore.air);
+                        }
+
+                    }
                 }
             }
         }
-
-            this.worldAllChunks.Add(cp, thechunk);
+        if (this.worldAllChunks.ContainsKey(dimen))
+        {
+            this.worldAllChunks[dimen].Add(cp, thechunk);
+        } else
+        {
+            this.worldAllChunks.Add(dimen, new Dictionary<Vector2, Dictionary<Vector3, Blocks.Block>>());
+            this.worldAllChunks[dimen].Add(cp, thechunk);
+        }
     }
     bool thisdone = false;
     // Update is called once per frame

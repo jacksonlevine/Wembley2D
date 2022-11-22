@@ -7,6 +7,7 @@ public class WaterBall : MonoBehaviour
     Vector3 mymachpos = Vector3.zero;
     public Vector3 myprevpos = Vector3.zero;
     public Drawer draw;
+    public int dimension = 0;
     void Start()
     {
         mymachpos = new Vector3(Mathf.FloorToInt(this.transform.position.x), Mathf.FloorToInt(this.transform.position.y), Mathf.FloorToInt(this.transform.position.z));
@@ -31,9 +32,9 @@ public class WaterBall : MonoBehaviour
         {
             if (mymachpos + vec != myprevpos)
             {
-                if (draw.worldMachines.ContainsKey(mymachpos + vec))
+                if (draw.worldMachines[dimension].ContainsKey(mymachpos + vec))
                 {
-                    if (draw.worldMachines[mymachpos + vec].id == draw.blockstore.pipeItem.id)
+                    if (draw.worldMachines[dimension][mymachpos + vec].id == draw.blockstore.pipeItem.id)
                     {
                         possibleroutes.Add(vec);
                     }

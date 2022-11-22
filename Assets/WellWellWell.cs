@@ -7,6 +7,7 @@ public class WellWellWell : MonoBehaviour
     public Drawer draw;
     public bool isOn = false;
     public GameObject waterball;
+    public int dimension;
     void Start()
     {
         
@@ -25,18 +26,18 @@ public class WellWellWell : MonoBehaviour
         };
         foreach(var vec in vecs)
         {
-            if (draw.worldMachines.ContainsKey(me + vec))
+            if (draw.worldMachines[dimension].ContainsKey(me + vec))
             {
-                if (draw.worldMachines[me + vec].id == 4)
+                if (draw.worldMachines[dimension][me + vec].id == 4)
                 {
-                    var thisgear = draw.worldMachines[me + vec].linkedObject.GetComponent<GearController>();
+                    var thisgear = draw.worldMachines[dimension][me + vec].linkedObject.GetComponent<GearController>();
                     if (thisgear.isRunning && !thisgear.jam)
                     {
                         bool thing = false;
                         this.isOn = true;
-                        if (draw.worldMachines.ContainsKey(me + transform.up))
+                        if (draw.worldMachines[dimension].ContainsKey(me + transform.up))
                         {
-                            if (draw.worldMachines[me + transform.up].id == 8)
+                            if (draw.worldMachines[dimension][me + transform.up].id == 8)
                             {
                                 GameObject wb = Instantiate(waterball, me + transform.up, Quaternion.identity);
                                 wb.SetActive(true);
@@ -57,16 +58,16 @@ public class WellWellWell : MonoBehaviour
                         this.transform.GetChild(0).gameObject.SetActive(false);
                     }
                 }
-                if (draw.worldMachines[me + vec].id == 6)
+                if (draw.worldMachines[dimension][me + vec].id == 6)
                 {
-                    var thisgear = draw.worldMachines[me + vec].linkedObject.GetComponent<DoubleGearController>();
+                    var thisgear = draw.worldMachines[dimension][me + vec].linkedObject.GetComponent<DoubleGearController>();
                     if ((thisgear.is1Running && !thisgear.jam1) || (thisgear.is2Running && !thisgear.jam2) || (thisgear.is2Running && !thisgear.jam2 && thisgear.is1Running && !thisgear.jam1))
                     {
                         bool thing = false;
                         this.isOn = true;
-                        if (draw.worldMachines.ContainsKey(me + transform.up))
+                        if (draw.worldMachines[dimension].ContainsKey(me + transform.up))
                         {
-                            if (draw.worldMachines[me + transform.up].id == 8)
+                            if (draw.worldMachines[dimension][me + transform.up].id == 8)
                             {
                                 thing = true;
                             }

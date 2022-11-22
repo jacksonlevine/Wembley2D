@@ -10,6 +10,8 @@ public class ChunkTerrain : MonoBehaviour
     public List<int> triangles = new();
     public List<Vector2> uvs = new();
     public Drawer draw;
+
+    public int dimension = 0;
     Vector3 vec = new();
 
     public GameObject player;
@@ -38,7 +40,7 @@ public class ChunkTerrain : MonoBehaviour
         var chunkspot = new Vector3((int)((int)this.transform.position.x / (int)16), 0, (int)((int)this.transform.position.z / (int)16));
         if (draw.chunks.ContainsKey(chunkspot + new Vector3(0, 0, -1)))
         {
-            if (draw.worldAllChunks.ContainsKey(new Vector2(chunkspot.x, chunkspot.z - 1)) && draw.chunks[chunkspot + new Vector3(0, 0, -1)].GetComponent<ChunkTerrain>().isInRemeshQueue == false)
+            if (draw.worldAllChunks[dimension].ContainsKey(new Vector2(chunkspot.x, chunkspot.z - 1)) && draw.chunks[chunkspot + new Vector3(0, 0, -1)].GetComponent<ChunkTerrain>().isInRemeshQueue == false)
             {
                 draw.remeshQueue.Add(draw.chunks[chunkspot + new Vector3(0, 0, -1)]);
                 draw.chunks[chunkspot + new Vector3(0, 0, -1)].GetComponent<ChunkTerrain>().isInRemeshQueue = true;
@@ -46,7 +48,7 @@ public class ChunkTerrain : MonoBehaviour
         }
         if (draw.chunks.ContainsKey(chunkspot + new Vector3(0, 0, 1)))
         {
-            if (draw.worldAllChunks.ContainsKey(new Vector2(chunkspot.x, chunkspot.z + 1)) && draw.chunks[chunkspot + new Vector3(0, 0, 1)].GetComponent<ChunkTerrain>().isInRemeshQueue == false)
+            if (draw.worldAllChunks[dimension].ContainsKey(new Vector2(chunkspot.x, chunkspot.z + 1)) && draw.chunks[chunkspot + new Vector3(0, 0, 1)].GetComponent<ChunkTerrain>().isInRemeshQueue == false)
             {
                 draw.remeshQueue.Add(draw.chunks[chunkspot + new Vector3(0, 0, 1)]);
                 draw.chunks[chunkspot + new Vector3(0, 0, 1)].GetComponent<ChunkTerrain>().isInRemeshQueue = true;
@@ -54,7 +56,7 @@ public class ChunkTerrain : MonoBehaviour
         }
         if (draw.chunks.ContainsKey(chunkspot + new Vector3(-1, 0, 0)))
         {
-            if (draw.worldAllChunks.ContainsKey(new Vector2(chunkspot.x - 1, chunkspot.z)) && draw.chunks[chunkspot + new Vector3(-1, 0, 0)].GetComponent<ChunkTerrain>().isInRemeshQueue == false)
+            if (draw.worldAllChunks[dimension].ContainsKey(new Vector2(chunkspot.x - 1, chunkspot.z)) && draw.chunks[chunkspot + new Vector3(-1, 0, 0)].GetComponent<ChunkTerrain>().isInRemeshQueue == false)
             {
                 draw.remeshQueue.Add(draw.chunks[chunkspot + new Vector3(-1, 0, 0)]);
                 draw.chunks[chunkspot + new Vector3(-1, 0, 0)].GetComponent<ChunkTerrain>().isInRemeshQueue = true;
@@ -62,7 +64,7 @@ public class ChunkTerrain : MonoBehaviour
         }
         if (draw.chunks.ContainsKey(chunkspot + new Vector3(1, 0, 0)))
         {
-            if (draw.worldAllChunks.ContainsKey(new Vector2(chunkspot.x + 1, chunkspot.z)) && draw.chunks[chunkspot + new Vector3(1, 0, 0)].GetComponent<ChunkTerrain>().isInRemeshQueue  == false)
+            if (draw.worldAllChunks[dimension].ContainsKey(new Vector2(chunkspot.x + 1, chunkspot.z)) && draw.chunks[chunkspot + new Vector3(1, 0, 0)].GetComponent<ChunkTerrain>().isInRemeshQueue  == false)
             {
                 draw.remeshQueue.Add(draw.chunks[chunkspot + new Vector3(1, 0, 0)]);
                 draw.chunks[chunkspot + new Vector3(1, 0, 0)].GetComponent<ChunkTerrain>().isInRemeshQueue = true;
@@ -72,17 +74,36 @@ public class ChunkTerrain : MonoBehaviour
     public bool isInRemeshQueue = false;
     public void OnInstantiate()
     {
+        this.dimension = draw.dimension;
         //set the chunk data to the worldallchunks world data
-        if (draw.worldAllChunks.ContainsKey(new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))))
+        if (!draw.worldAllChunks.ContainsKey(dimension))
         {
-            this.thechunk = draw.worldAllChunks[new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))];
-            Debug.Log("Adding chunk with " + draw.worldAllChunks[new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))].Count + " things");
+            draw.worldAllChunks.Add(dimension, new Dictionary<Vector2, Dictionary<Vector3, Blocks.Block>>());
+            if (draw.worldAllChunks[dimension].ContainsKey(new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))))
+            {
+                this.thechunk = draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))];
+                Debug.Log("Adding chunk with " + draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))].Count + " things");
 
+            }
+            else
+            { //generate new data if needed
+                draw.GenerateNewWorldDataChunk((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16), dimension);
+                this.thechunk = draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))];
+            }
         }
         else
-        { //generate new data if needed
-            draw.GenerateNewWorldDataChunk((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16));
-            this.thechunk = draw.worldAllChunks[new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))];
+        {
+            if (draw.worldAllChunks[dimension].ContainsKey(new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))))
+            {
+                this.thechunk = draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))];
+                Debug.Log("Adding chunk with " + draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))].Count + " things");
+
+            }
+            else
+            { //generate new data if needed
+                draw.GenerateNewWorldDataChunk((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16), dimension);
+                this.thechunk = draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))];
+            }
         }
         //RebuildMesh();
         if (!draw.remeshQueue.Contains(this.gameObject) && !this.isInRemeshQueue)
@@ -386,6 +407,7 @@ public class ChunkTerrain : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        this.dimension = draw.dimension;
       if(Vector3.Distance(this.transform.position+(transform.up*35), player.transform.position) > 200)
         {
             if(player.GetComponent<PlayerScript>().neededChunks.Count > 2)

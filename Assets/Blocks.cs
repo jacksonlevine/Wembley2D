@@ -43,6 +43,11 @@ public class Blocks : MonoBehaviour
     public Block pipeItem;
     public GameObject pipe;
 
+
+    public Block gunItem;
+    public GameObject bullet;
+
+
     public Dictionary<int, GameObject> IDtoModel = new();
 
     public List<int> modelIDs = new();
@@ -140,6 +145,15 @@ public class Blocks : MonoBehaviour
         blocks.Add(shaft.id, shaft);
         modelIDs.Add(11);
         IDtoModel.Add(shaft.id, shaftobj);
+
+
+        gunItem = new Block();
+        gunItem.id = 12;
+        blocks.Add(gunItem.id, gunItem);
+        itemIDs.Add(gunItem.id);
+
+
+
 
         //building the mesh for lever
 
@@ -283,7 +297,7 @@ public class Blocks : MonoBehaviour
         {
             for (int j = -20; j < 20; j++)
             {
-                draw.GenerateNewWorldDataChunk(i, j);
+                draw.GenerateNewWorldDataChunk(i, j, 0);
             }
         }
 

@@ -9,6 +9,7 @@ public class PipeMesher : MonoBehaviour
     public List<int> connectIDs = new();
 
     public float waterlevel = 0;
+    public int dimension = 0;
 
     public Sprite[] numbersSprites = new Sprite[11];
 
@@ -116,9 +117,13 @@ public class PipeMesher : MonoBehaviour
 
         Vector3 vec = new Vector3((int)this.transform.position.x, (int)this.transform.position.y, (int)this.transform.position.z);
         vec.x++;
-        if(draw.worldMachines.ContainsKey(vec))
+        if(!draw.worldMachines.ContainsKey(dimension))
         {
-            if (this.connectIDs.Contains(draw.worldMachines[vec].id))
+            draw.worldMachines.Add(dimension, new Dictionary<Vector3, Drawer.MachineNode>());
+        }
+        if(draw.worldMachines[dimension].ContainsKey(vec))
+        {
+            if (this.connectIDs.Contains(draw.worldMachines[dimension][vec].id))
             {
                 //show connected pipe;
                 tris.Add(2); //front          //left outer
@@ -148,16 +153,16 @@ public class PipeMesher : MonoBehaviour
                 tris.Add(22);
                 tris.Add(11);
                 tris.Add(10);
-                if(draw.worldMachines[vec].id == 8 && draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
+                if(draw.worldMachines[dimension][vec].id == 8 && draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
                 {
-                    draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().Remesh();
+                    draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().Remesh();
                 }
             }
         }
         vec.x-=2;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (this.connectIDs.Contains(draw.worldMachines[vec].id))
+            if (this.connectIDs.Contains(draw.worldMachines[dimension][vec].id))
             {
                 
                 tris.Add(16); //front          //right outer
@@ -187,17 +192,17 @@ public class PipeMesher : MonoBehaviour
                 tris.Add(8);
                 tris.Add(19);
                 tris.Add(18);
-                if (draw.worldMachines[vec].id == 8 && draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
+                if (draw.worldMachines[dimension][vec].id == 8 && draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
                 {
-                    draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().Remesh();
+                    draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().Remesh();
                 }
             }
         }
         vec.x++;
         vec.y++;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (this.connectIDs.Contains(draw.worldMachines[vec].id))
+            if (this.connectIDs.Contains(draw.worldMachines[dimension][vec].id))
             {
                 tris.Add(1); //front          //top outer
                 tris.Add(24);
@@ -226,16 +231,16 @@ public class PipeMesher : MonoBehaviour
                 tris.Add(11);
                 tris.Add(27);
                 tris.Add(9);
-                if (draw.worldMachines[vec].id == 8 && draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
+                if (draw.worldMachines[dimension][vec].id == 8 && draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
                 {
-                    draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().Remesh();
+                    draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().Remesh();
                 }
             }
         }
         vec.y-=2;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (this.connectIDs.Contains(draw.worldMachines[vec].id))
+            if (this.connectIDs.Contains(draw.worldMachines[dimension][vec].id))
             {
                 tris.Add(28); //front          //bottom outer
                 tris.Add(0);
@@ -264,17 +269,17 @@ public class PipeMesher : MonoBehaviour
                 tris.Add(30);
                 tris.Add(8);
                 tris.Add(31);
-                if (draw.worldMachines[vec].id == 8 && draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
+                if (draw.worldMachines[dimension][vec].id == 8 && draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
                 {
-                    draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().Remesh();
+                    draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().Remesh();
                 }
             }
         }
         vec.y++;
         vec.z++;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (this.connectIDs.Contains(draw.worldMachines[vec].id))
+            if (this.connectIDs.Contains(draw.worldMachines[dimension][vec].id))
             {
                 tris.Add(9); //top        //back outer
                 tris.Add(13);
@@ -303,16 +308,16 @@ public class PipeMesher : MonoBehaviour
                 tris.Add(12);
                 tris.Add(10);
                 tris.Add(14);
-                if (draw.worldMachines[vec].id == 8 && draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
+                if (draw.worldMachines[dimension][vec].id == 8 && draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
                 {
-                    draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().Remesh();
+                    draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().Remesh();
                 }
             }
         }
         vec.z-=2;
-        if (draw.worldMachines.ContainsKey(vec))
+        if (draw.worldMachines[dimension].ContainsKey(vec))
         {
-            if (this.connectIDs.Contains(draw.worldMachines[vec].id))
+            if (this.connectIDs.Contains(draw.worldMachines[dimension][vec].id))
             {
                 tris.Add(5); //top        //front outer
                 tris.Add(1);
@@ -341,9 +346,9 @@ public class PipeMesher : MonoBehaviour
                 tris.Add(0);
                 tris.Add(6);
                 tris.Add(2);
-                if (draw.worldMachines[vec].id == 8 && draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
+                if (draw.worldMachines[dimension][vec].id == 8 && draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().justremeshed != true)
                 {
-                    draw.worldMachines[vec].linkedObject.GetComponent<PipeMesher>().Remesh();
+                    draw.worldMachines[dimension][vec].linkedObject.GetComponent<PipeMesher>().Remesh();
                 }
             }
         }

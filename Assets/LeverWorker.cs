@@ -6,6 +6,7 @@ public class LeverWorker : MonoBehaviour
 {
     public bool isOn = false;
     public Drawer draw;
+    public int dimension = 0;
     void Start()
     {
         
@@ -27,159 +28,163 @@ public class LeverWorker : MonoBehaviour
     {
         Vector3 vec = new Vector3((int)this.transform.position.x, (int)this.transform.position.y, (int)this.transform.position.z);
         vec.x++;
-            if (draw.worldMachines.ContainsKey(vec))
+        if (!draw.worldMachines.ContainsKey(dimension))
+        {
+            draw.worldMachines.Add(dimension, new Dictionary<Vector3, Drawer.MachineNode>());
+        }
+        if (draw.worldMachines[dimension].ContainsKey(vec))
             {
                 if (this.isOn)
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().isRunning = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().isRunning = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
                     }
                 } else
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().jam = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().jam = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
                     }
                 }
             }
             vec.x -= 2;
-            if (draw.worldMachines.ContainsKey(vec))
+            if (draw.worldMachines[dimension].ContainsKey(vec))
             {
                 if (this.isOn)
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().isRunning = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().isRunning = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
                     }
                 }
                 else
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().jam = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().jam = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
                     }
                 }
             }
             vec.x++; //reset
             vec.y++;
-            if (draw.worldMachines.ContainsKey(vec))
+            if (draw.worldMachines[dimension].ContainsKey(vec))
             {
                 if (this.isOn)
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().isRunning = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().isRunning = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
                     }
                 }
                 else
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().jam = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().jam = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
                     }
                 }
             }
             vec.y -= 2;
-            if (draw.worldMachines.ContainsKey(vec))
+            if (draw.worldMachines[dimension].ContainsKey(vec))
             {
                 if (this.isOn)
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().isRunning = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().isRunning = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
                     }
                 }
                 else
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().jam = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().jam = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
                     }
                 }
             }
             vec.y++; //reset
             vec.z++;
-            if (draw.worldMachines.ContainsKey(vec))
+            if (draw.worldMachines[dimension].ContainsKey(vec))
             {
                 if (this.isOn)
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().isRunning = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().isRunning = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
                     }
                 }
                 else
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().jam = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().jam = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
                     }
                 }
             }
             vec.z -= 2;
-            if (draw.worldMachines.ContainsKey(vec))
+            if (draw.worldMachines[dimension].ContainsKey(vec))
             {
                 if (this.isOn)
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().isRunning = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().isRunning = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().is1Running = true;
                     }
                 }
                 else
                 {
-                    if (draw.worldMachines[vec].id == 4)
+                    if (draw.worldMachines[dimension][vec].id == 4)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<GearController>().jam = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<GearController>().jam = true;
                     }
-                    if (draw.worldMachines[vec].id == 6)
+                    if (draw.worldMachines[dimension][vec].id == 6)
                     {
-                        draw.worldMachines[vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
+                        draw.worldMachines[dimension][vec].linkedObject.GetComponent<DoubleGearController>().jam1 = true;
                     }
                 }
             }
