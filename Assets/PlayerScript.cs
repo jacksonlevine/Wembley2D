@@ -15,6 +15,9 @@ public class PlayerScript : MonoBehaviour
     public Drawer draw;
     public Blocks blockstore;
 
+    public Color[] lampColors;
+
+
     private float walktime = 0;
 
     public int dimension = 0;
@@ -118,6 +121,8 @@ public class PlayerScript : MonoBehaviour
         myInv[11].amt = 5;
         myInv[12].id = 12;
         myInv[12].amt = 1;
+        myInv[13].id = 13;
+        myInv[13].amt = 199;
     }
 
     private void OnApplicationFocus(bool focus)
@@ -1095,7 +1100,7 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-
+    int colorIndex = 1;
     bool SetBlock(int x, int y, int z, int id)
     {
         Vector3 thing = new Vector3(x, y, z);
@@ -1195,6 +1200,12 @@ public class PlayerScript : MonoBehaviour
                         {
                             draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().UpdateRot1Index((t + 1) % 6);
                         }
+                    }
+                    if (draw.worldMachines[dimension][thing].id == 13)
+                    {
+                        var t = colorIndex;
+                        draw.worldMachines[dimension][thing].linkedObject.transform.GetChild(0).GetChild(0).GetComponent<Light>().color = lampColors[((t + 1) % lampColors.Length)];
+                        colorIndex = ((t + 1) % lampColors.Length);
                     }
                 }
                 

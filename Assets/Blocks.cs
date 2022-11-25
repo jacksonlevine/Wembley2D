@@ -47,6 +47,9 @@ public class Blocks : MonoBehaviour
     public Block gunItem;
     public GameObject bullet;
 
+    public Block lanternItem;
+    public GameObject lantern;
+
 
     public Dictionary<int, GameObject> IDtoModel = new();
 
@@ -151,6 +154,13 @@ public class Blocks : MonoBehaviour
         gunItem.id = 12;
         blocks.Add(gunItem.id, gunItem);
         itemIDs.Add(gunItem.id);
+
+        lanternItem = new Block();
+        lanternItem.id = 13;
+        blocks.Add(lanternItem.id, lanternItem);
+        modelIDs.Add(13);
+        IDtoModel.Add(lanternItem.id, lantern);
+
 
 
 
