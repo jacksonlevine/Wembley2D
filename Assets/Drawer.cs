@@ -21,6 +21,9 @@ public class Drawer : MonoBehaviour
 
     public Mesh grassmesh;
 
+    public ComputeShader compute;
+    public Transform pusher;
+
     private struct MeshProperties
     {
         public Matrix4x4 mat;
@@ -70,20 +73,20 @@ public class Drawer : MonoBehaviour
     int index = 0;
     public void InitializeFoliageBuffers()
     {
+        int kernel = compute.FindKernel("CSMain");
         index = 0;
-        mats.Clear();
-        //bufferArgs.Clear();
-        //meshPropsBuffers.Clear();
+        //mats.Clear();
+        bufferArgs.Clear();
+        meshPropsBuffers.Clear();
         foliagePoses.Clear();
+
         Vector3 vec;
-        for(int i = (int)player.position.x - LoadRadius; i < (int)player.position.x + LoadRadius; i++)
+        for(float i = player.position.x - LoadRadius; i < player.position.x + LoadRadius; i++)
         {
-            for(int j = (int)player.position.z - LoadRadius; j < (int)player.position.z + LoadRadius; j++) {
-                for (int k = (int)player.position.y - 5; k < (int)player.position.y + 5; k++)
+            for(float j = player.position.z - LoadRadius; j < player.position.z + LoadRadius; j++) {
+                for (float k = player.position.y - 5; k < player.position.y + 5; k++)
                 {
-                    vec.x = (int)i;
-                    vec.y = (int)k;
-                    vec.z = (int)j;
+                    vec = Vector3Int.FloorToInt(new Vector3(i, k, j));
                     if (worldFoliage.ContainsKey(vec))
                     {
                         for (int x = 0; x < 6; x++)
@@ -102,7 +105,44 @@ public class Drawer : MonoBehaviour
                 }
             }
         }
+
+        for(int i = 0; i < foliagePoses.Count; i++)
+        {
+            if (foliagePoses[i].Count > 0)
+            {
+                //BUFFER ARGS
+
+                uint[] onearg = new uint[5] { 0, 0, 0, 0, 0 };
+                onearg[0] = (uint)foliageDict[i].GetIndexCount(0);
+                onearg[1] = (uint)foliagePoses[i].Count;
+                ComputeBuffer oneBuffer = new ComputeBuffer(foliagePoses[i].Count, onearg.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
+                System.GC.SuppressFinalize(oneBuffer);
+                oneBuffer.SetData(onearg);
+                bufferArgs.Add(i, oneBuffer);
+
+
+                //MESH PROPERTIES
+                index = 0;
+                    MeshProperties[] properties = new MeshProperties[foliagePoses[i].Count];
+                    foreach(KeyValuePair<Vector3, int> keyv in foliagePoses[i])
+                    {
+                        MeshProperties props = new();
+                        props.uv[0] = 0;
+                        props.color = Color.white;
+                        props.mat.SetTRS(keyv.Key, Quaternion.identity, Vector3.one);
+                        properties[index] = props;
+                        index++;
+                    }
+                    ComputeBuffer meshPropertieBuffer = new ComputeBuffer(foliagePoses[i].Count, MeshProperties.Size());
+                    System.GC.SuppressFinalize(meshPropertieBuffer);
+                    meshPropertieBuffer.SetData(properties);
+                    compute.SetBuffer(kernel, "_Properties", meshPropertieBuffer);
+                    meshPropsBuffers.Add(i, meshPropertieBuffer);
+                    foliageMats[i].SetBuffer("_Properties", meshPropertieBuffer);
+            }
+        }
     }
+
 
 
     public static float Perlin3D(float x, float y, float z, float scale)
@@ -129,21 +169,31 @@ public class Drawer : MonoBehaviour
             new(1, 0, 0),
             new(0, 0, 0),
             new(0, 1, 0),
-            new(1, 1, 0)
+            new(1, 1, 0),
+            new(0.5f, 0, -0.5f),
+            new(0.5f, 1, -0.5f),
+            new(0.5f, 1, 0.5f),
+            new(0.5f, 0, 0.5f),
         };
         Vector2[] uvs =
         {
             new(1, 0),
             new(0, 0),
             new(0, 1),
-            new(1, 1)
+            new(1, 1),
+            new(1, 0),
+            new(0, 0),
+            new(0, 1),
+            new(1, 1),
         };
         grassmesh.bounds = bounds;
         grassmesh.SetVertices(verts);
         int[] tris =
         {
             1, 2, 3, 1, 3, 0,
-            0, 3, 2, 0, 2, 1
+            0, 3, 2, 0, 2, 1,
+            4, 5, 6, 4, 6, 7,
+            7, 6, 5, 7, 5, 4,
         };
         grassmesh.SetTriangles(tris, 0);
         grassmesh.RecalculateNormals();
@@ -170,7 +220,7 @@ public class Drawer : MonoBehaviour
             }
         }
 
-       /* for(int i = 0; i < 40; i++)
+       for(int i = 0; i < 40; i++)
         {
             for (int j = 0; j < 40; j++)
             {
@@ -180,7 +230,7 @@ public class Drawer : MonoBehaviour
                     t.SetActive(true);
                 }
             }
-        }*/
+        }
         
 
     }
@@ -277,12 +327,13 @@ public class Drawer : MonoBehaviour
                             {
                                 thechunk.Add(vec, blockstore.dirt);
                             }
-                            vec.y += 3;
+                            vec.y += 2;
                             if (Random.Range(0, 20) == 2) 
                             {
-                                if (!worldFoliage.ContainsKey(new Vector3((x * 16) + vec.x, vec.y, (z * 16) + vec.z)))
+                                Vector3 thing = new Vector3((x * 16) + vec.x, vec.y, (z * 16) + vec.z);
+                                if (!worldFoliage.ContainsKey(thing))
                                 {
-                                    worldFoliage.Add(new Vector3((x * 16) + vec.x, vec.y, (z * 16) + vec.z), 0);
+                                    worldFoliage.Add(thing, 0);
                                 }
                             };
                         }
@@ -350,6 +401,22 @@ public class Drawer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        int kernel = compute.FindKernel("CSMain");
+
+        compute.SetVector("_PusherPosition", pusher.position);
+// We used to just be able to use `population` here, but it looks like a Unity update imposed a thread limit (65535) on my device.
+// This is probably for the best, but we have to do some more calculation.  Divide population by numthreads.x (declared in compute shader).
+        
+        foreach(KeyValuePair<int, ComputeBuffer> buff in bufferArgs)
+        {
+            if(buff.Value.count > 0)
+            {
+                compute.Dispatch(kernel, bufferArgs[buff.Key].count, 1, 1);
+                Graphics.DrawMeshInstancedIndirect(foliageDict[buff.Key], 0, foliageMats[buff.Key], bounds, buff.Value, 0, null, UnityEngine.Rendering.ShadowCastingMode.Off, false, 0, Camera.main, UnityEngine.Rendering.LightProbeUsage.BlendProbes);
+            }
+        }
+
+
         if(Vector3.Distance(thisPosition, player.position) > 20)
         {
             thisPosition.x = player.position.x;

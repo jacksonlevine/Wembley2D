@@ -50,6 +50,9 @@ public class Blocks : MonoBehaviour
     public Block lanternItem;
     public GameObject lantern;
 
+    public Block springPadItem;
+    public GameObject springPad;
+
 
     public Dictionary<int, GameObject> IDtoModel = new();
 
@@ -162,7 +165,11 @@ public class Blocks : MonoBehaviour
         IDtoModel.Add(lanternItem.id, lantern);
 
 
-
+        springPadItem = new Block();
+        springPadItem.id = 14;
+        blocks.Add(springPadItem.id, springPadItem);
+        modelIDs.Add(14);
+        IDtoModel.Add(springPadItem.id, springPad);
 
 
         //building the mesh for lever
@@ -233,6 +240,9 @@ public class Blocks : MonoBehaviour
         mesh.RecalculateNormals();
         lever.transform.GetChild(0).gameObject.GetComponent<MeshFilter>().mesh = mesh;
         lever.transform.GetChild(0).gameObject.GetComponent<MeshCollider>().sharedMesh = mesh;
+
+        springPad.transform.GetChild(0).gameObject.GetComponent<MeshFilter>().mesh = mesh;
+        springPad.transform.GetChild(0).gameObject.GetComponent<MeshCollider>().sharedMesh = mesh;
 
 
         verts.Clear();

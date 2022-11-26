@@ -8,9 +8,8 @@ Shader "Custom/InstancedIndirectColor" {
         _Index ("Tile Start Index", Float) = 0
     }
     SubShader {
-        Tags { "RenderType" = "Opaque" }
+        Tags { "RenderType" = "TransparentCutout" }
         LOD 200
-        ZWrite Off
         Pass {
             CGPROGRAM
             #pragma vertex vert
@@ -26,7 +25,7 @@ Shader "Custom/InstancedIndirectColor" {
 
             struct v2f {
                 float2 tuv : TEXCOORD0;
-                //UNITY_FOG_COORDS(1)
+                UNITY_FOG_COORDS(1)
                 float4 vertex   : SV_POSITION;
                 fixed4 color    : COLOR;
                 //float ref      : TANGENT0;
@@ -45,15 +44,21 @@ Shader "Custom/InstancedIndirectColor" {
             float _Index;
             v2f vert(appdata_t i, uint instanceID: SV_InstanceID) {
                 v2f o;
-                //UNITY_SETUP_INSTANCE_ID(i);
+                UNITY_SETUP_INSTANCE_ID(i);
                 float index = max(0.0, _Index);
-                //#if defined(UNITY_INSTANCING_ENABLED) || defined(UNITY_PROCEDURAL_INSTANCING_ENABLED) || defined(UNITY_STEREO_INSTANCING_ENABLED)
-                //index += unity_InstanceID;
-                //#endif
-                float4 pos = i.vertex;
-                o.vertex = pos;
+                #if defined(UNITY_INSTANCING_ENABLED) || defined(UNITY_PROCEDURAL_INSTANCING_ENABLED) || defined(UNITY_STEREO_INSTANCING_ENABLED)
+                index += unity_InstanceID;
+                #endif
+                float4 pos = mul(_Properties[instanceID].mat, i.vertex);
+                o.vertex = UnityObjectToClipPos(pos);
                 //o.ref = _Properties[instanceID].ref;
-                o.tuv = i.tuv;
+
+                float2 uvOffset = float2(
+                    floor(fmod(index, _Tiles.x)),
+                    floor(fmod(index *_Tiles.z, _Tiles.y))
+                    );
+ 
+                o.tuv = i.tuv.xy + uvOffset.xy * _Tiles.zw;
                 o.color = _Properties[instanceID].color;
                 //UNITY_TRANSFER_FOG(o,o.vertex);
                 return o;
@@ -65,6 +70,9 @@ Shader "Custom/InstancedIndirectColor" {
                 // sample texture and return it
                 //UNITY_APPLY_FOG(i.fogCoord, col);
                 //if(i.color[3] != 0.0f && i.color[3] != 0.2f) {
+                if(col[3] < 0.3f) {
+                    discard;
+                    }
                     return col;
                     //} else {
                     //return i.color;
