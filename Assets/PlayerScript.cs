@@ -469,7 +469,7 @@ public class PlayerScript : MonoBehaviour
                     }
                     else
                     {
-                        Debug.Log("Is this");
+                        //Debug.Log("Is this");
                         BreakBlock(Mathf.FloorToInt(thing.x), Mathf.FloorToInt(thing.y), Mathf.FloorToInt(thing.z));
                         RecheckSurrounders((int)thing.x, (int)thing.y, (int)thing.z);
                     }
@@ -730,7 +730,7 @@ public class PlayerScript : MonoBehaviour
                 }
             }
         }
-        Debug.Log(thing.x + " " + thing.y + " " + thing.z);
+        //Debug.Log(thing.x + " " + thing.y + " " + thing.z);
     }
 
     public bool AddToInventory(List<ItemSlot> inv, int type, int amount)

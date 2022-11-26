@@ -82,7 +82,7 @@ public class ChunkTerrain : MonoBehaviour
             if (draw.worldAllChunks[dimension].ContainsKey(new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))))
             {
                 this.thechunk = draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))];
-                Debug.Log("Adding chunk with " + draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))].Count + " things");
+                //Debug.Log("Adding chunk with " + draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))].Count + " things");
 
             }
             else
@@ -96,7 +96,7 @@ public class ChunkTerrain : MonoBehaviour
             if (draw.worldAllChunks[dimension].ContainsKey(new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))))
             {
                 this.thechunk = draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))];
-                Debug.Log("Adding chunk with " + draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))].Count + " things");
+                //Debug.Log("Adding chunk with " + draw.worldAllChunks[dimension][new Vector2((int)((int)this.transform.position.x / (int)16), (int)((int)this.transform.position.z / (int)16))].Count + " things");
 
             }
             else
@@ -119,7 +119,7 @@ public class ChunkTerrain : MonoBehaviour
     Vector3 vec3;
     public void RebuildMesh()
     {
-        Debug.Log("Rebuilding Mesh");
+        //Debug.Log("Rebuilding Mesh");
         vertices.Clear();
         triangles.Clear();
         uvs.Clear();
