@@ -322,7 +322,7 @@ public class Drawer : MonoBehaviour
                         vec.x = i;
                         vec.y = j;
                         vec.z = k;
-                        if (j < (Mathf.PerlinNoise((float)((x * 16) + vec.x) / 30f, (float)((z * 16) + vec.z) / 30f) * 2))
+                        if (j < (Mathf.PerlinNoise((float)((x * 16) + vec.x) / 30f, (float)((z * 16) + vec.z) / 30f) * 8))
                         {
                             if (thechunk.ContainsKey(vec))
                             {
