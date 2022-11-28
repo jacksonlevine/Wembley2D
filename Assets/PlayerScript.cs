@@ -958,6 +958,13 @@ public class PlayerScript : MonoBehaviour
     public List<Vector2> neededChunks = new();
     void Update()
     {
+        if (myInv[selected].id == blockstore.lanternItem.id)
+        {
+            this.GetComponentInChildren<Light>().enabled = true;
+        } else
+        {
+            this.GetComponentInChildren<Light>().enabled = false;
+        }
         this.dimension = draw.dimension;
         if (draw.remeshQueue.Count > 50)
         {

@@ -416,8 +416,8 @@ public class ChunkTerrain : MonoBehaviour
             this.gameObject.transform.GetChild(0).GetComponent<MeshRenderer>().enabled = true;
             this.gameObject.transform.GetChild(0).GetComponent<MeshFilter>().mesh = secondmesh;
             this.gameObject.transform.GetChild(0).GetComponent<MeshFilter>().sharedMesh = secondmesh;
-            this.gameObject.transform.GetChild(0).GetComponent<MeshCollider>().enabled = true;
-            this.gameObject.transform.GetChild(0).GetComponent<MeshCollider>().sharedMesh = secondmesh;
+            this.gameObject.transform.GetChild(0).GetComponent<MeshCollider>().enabled = false; //fornow
+            //this.gameObject.transform.GetChild(0).GetComponent<MeshCollider>().sharedMesh = secondmesh;
             Debug.Log("Combscount: " + combs.Count + "!!");
            
         }
