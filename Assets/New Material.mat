@@ -11,6 +11,7 @@ Material:
   m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_ValidKeywords:
   - _ALPHATEST_ON
+  - _GLOSSYREFLECTIONS_OFF
   - _SPECULARHIGHLIGHTS_OFF
   m_InvalidKeywords:
   - _MAPPING_LATITUDE_LONGITUDE_LAYOUT
@@ -122,13 +123,13 @@ Material:
     - _Exposure: 1
     - _FlipbookMode: 0
     - _GlossMapScale: 0
-    - _Glossiness: 0
-    - _GlossyReflections: 1
+    - _Glossiness: 0.496
+    - _GlossyReflections: 0
     - _ImageType: 0
     - _Layout: 0
     - _LightingEnabled: 1
     - _Mapping: 1
-    - _Metallic: 0.337
+    - _Metallic: 0
     - _MirrorOnBack: 0
     - _Mode: 1
     - _OcclusionStrength: 1

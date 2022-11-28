@@ -89,7 +89,7 @@ public class Drawer : MonoBehaviour
                     vec = Vector3Int.FloorToInt(new Vector3(i, k, j));
                     if (worldFoliage.ContainsKey(vec))
                     {
-                        for (int x = 0; x < 6; x++)
+                        for (int x = 0; x < foliageDict.Count; x++)
                         {
                             if (!foliagePoses.ContainsKey(x))
                             {
@@ -97,7 +97,7 @@ public class Drawer : MonoBehaviour
                             }
                             if (worldFoliage[vec] == x)
                             {
-                                foliagePoses[x].Add(vec, x);
+                                foliagePoses[x].Add(vec + new Vector3(0, 0, 0.5f), x);
                                 
                             }
                         }
@@ -110,15 +110,7 @@ public class Drawer : MonoBehaviour
         {
             if (foliagePoses[i].Count > 0)
             {
-                //BUFFER ARGS
-
-                uint[] onearg = new uint[5] { 0, 0, 0, 0, 0 };
-                onearg[0] = (uint)foliageDict[i].GetIndexCount(0);
-                onearg[1] = (uint)foliagePoses[i].Count;
-                ComputeBuffer oneBuffer = new ComputeBuffer(foliagePoses[i].Count, onearg.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
-                System.GC.SuppressFinalize(oneBuffer);
-                oneBuffer.SetData(onearg);
-                bufferArgs.Add(i, oneBuffer);
+                
 
 
                 //MESH PROPERTIES
@@ -139,6 +131,18 @@ public class Drawer : MonoBehaviour
                     compute.SetBuffer(kernel, "_Properties", meshPropertieBuffer);
                     meshPropsBuffers.Add(i, meshPropertieBuffer);
                     foliageMats[i].SetBuffer("_Properties", meshPropertieBuffer);
+
+                //BUFFER ARGS
+
+                uint[] onearg = new uint[5] { 0, 0, 0, 0, 0 };
+                onearg[0] = (uint)foliageDict[i].GetIndexCount(0);
+                onearg[1] = (uint)foliagePoses[i].Count;
+                ComputeBuffer oneBuffer = new ComputeBuffer(foliagePoses[i].Count, onearg.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
+                System.GC.SuppressFinalize(oneBuffer);
+                oneBuffer.SetData(onearg);
+                bufferArgs.Add(i, oneBuffer);
+                compute.SetVector("_PusherPosition", pusher.position);
+                compute.Dispatch(kernel, foliagePoses[i].Count, 1, 1);
             }
         }
     }
@@ -160,12 +164,14 @@ public class Drawer : MonoBehaviour
     }
     Bounds bounds;
     public Vector3 thisPosition = new();
-    void Start()
-    {
-        bounds = new Bounds(Vector3.zero, Vector3.one*int.MaxValue);
 
-        grassmesh = new Mesh();
-        Vector3[] verts = {
+    float ssw = 16;
+    void MakePlantMeshesAndMaterials()
+    {
+        for (float i = 0; i < 9; i++)
+        {
+            grassmesh = new Mesh();
+            Vector3[] verts = {
             new(1, 0, 0),
             new(0, 0, 0),
             new(0, 1, 0),
@@ -175,34 +181,42 @@ public class Drawer : MonoBehaviour
             new(0.5f, 1, 0.5f),
             new(0.5f, 0, 0.5f),
         };
-        Vector2[] uvs =
-        {
-            new(1, 0),
-            new(0, 0),
-            new(0, 1),
-            new(1, 1),
-            new(1, 0),
-            new(0, 0),
-            new(0, 1),
-            new(1, 1),
+            Vector2[] uvs =
+            {
+            new(((i%ssw)+1)/ssw, (float)(Mathf.FloorToInt(i/ssw))/(float)ssw),
+            new((i%ssw)/ssw, (float)(Mathf.FloorToInt(i/ssw))/(float)ssw),
+            new((i%ssw)/ssw, (float)(Mathf.FloorToInt(i/ssw)+1)/(float)ssw),
+            new(((i%ssw)+1)/ssw, (float)(Mathf.FloorToInt(i/ssw)+1)/(float)ssw),
+
+            new(((i%ssw)+1)/ssw, (float)(Mathf.FloorToInt(i/ssw))/(float)ssw),
+            new((i%ssw)/ssw, (float)(Mathf.FloorToInt(i/ssw))/(float)ssw),
+            new((i%ssw)/ssw, (float)(Mathf.FloorToInt(i/ssw)+1)/(float)ssw),
+            new(((i%ssw)+1)/ssw, (float)(Mathf.FloorToInt(i/ssw)+1)/(float)ssw),
         };
-        grassmesh.bounds = bounds;
-        grassmesh.SetVertices(verts);
-        int[] tris =
-        {
+            grassmesh.bounds = bounds;
+            grassmesh.SetVertices(verts);
+            int[] tris =
+            {
             1, 2, 3, 1, 3, 0,
             0, 3, 2, 0, 2, 1,
             4, 5, 6, 4, 6, 7,
             7, 6, 5, 7, 5, 4,
         };
-        grassmesh.SetTriangles(tris, 0);
-        grassmesh.RecalculateNormals();
-        
-        grassmesh.RecalculateTangents();
-        grassmesh.OptimizeReorderVertexBuffer();
-        grassmesh.uv = uvs;
-        foliageDict.Add(0, grassmesh);
-        foliageMats.Add(0, grassMaterial1);
+            grassmesh.SetTriangles(tris, 0);
+            grassmesh.OptimizeReorderVertexBuffer();
+            grassmesh.RecalculateNormals();
+            grassmesh.uv = uvs;
+            foliageDict.Add((int)i, grassmesh);
+            Material mat = new Material(grassMaterial1.shader);
+            mat.CopyPropertiesFromMaterial(grassMaterial1);
+            foliageMats.Add((int)i, mat);
+        }
+    }
+    void Start()
+    {
+        bounds = new Bounds(Vector3.zero, Vector3.one*int.MaxValue);
+
+        MakePlantMeshesAndMaterials();
 
         thisPosition.x = player.position.x;
         thisPosition.y = player.position.y;
@@ -318,6 +332,14 @@ public class Drawer : MonoBehaviour
                             {
                                 thechunk.Add(vec, blockstore.block);
                             }
+                            if (Random.Range(0, 50) == 2)
+                            {
+                                Vector3 thing = new Vector3((x * 16) + vec.x, vec.y+1, (z * 16) + vec.z);
+                                if (!worldFoliage.ContainsKey(thing))
+                                {
+                                    worldFoliage.Add(thing, Random.Range(0, 9));
+                                }
+                            };
                             vec.y = j - 1;
                             if (thechunk.ContainsKey(vec))
                             {
@@ -327,15 +349,7 @@ public class Drawer : MonoBehaviour
                             {
                                 thechunk.Add(vec, blockstore.dirt);
                             }
-                            vec.y += 2;
-                            if (Random.Range(0, 20) == 2) 
-                            {
-                                Vector3 thing = new Vector3((x * 16) + vec.x, vec.y, (z * 16) + vec.z);
-                                if (!worldFoliage.ContainsKey(thing))
-                                {
-                                    worldFoliage.Add(thing, 0);
-                                }
-                            };
+                            
                         }
                         else
                         {
@@ -404,17 +418,17 @@ public class Drawer : MonoBehaviour
         int kernel = compute.FindKernel("CSMain");
 
         compute.SetVector("_PusherPosition", pusher.position);
-// We used to just be able to use `population` here, but it looks like a Unity update imposed a thread limit (65535) on my device.
-// This is probably for the best, but we have to do some more calculation.  Divide population by numthreads.x (declared in compute shader).
-        
-        foreach(KeyValuePair<int, ComputeBuffer> buff in bufferArgs)
+        // We used to just be able to use `population` here, but it looks like a Unity update imposed a thread limit (65535) on my device.
+        // This is probably for the best, but we have to do some more calculation.  Divide population by numthreads.x (declared in compute shader).
+
+        /*foreach (KeyValuePair<int, ComputeBuffer> buff in bufferArgs)
         {
             if(buff.Value.count > 0)
             {
                 compute.Dispatch(kernel, bufferArgs[buff.Key].count, 1, 1);
-                Graphics.DrawMeshInstancedIndirect(foliageDict[buff.Key], 0, foliageMats[buff.Key], bounds, buff.Value, 0, null, UnityEngine.Rendering.ShadowCastingMode.Off, false, 0, Camera.main, UnityEngine.Rendering.LightProbeUsage.BlendProbes);
+                Graphics.DrawMeshInstancedIndirect(foliageDict[buff.Key], 0, foliageMats[buff.Key], bounds, buff.Value);
             }
-        }
+        }*/
 
 
         if(Vector3.Distance(thisPosition, player.position) > 20)

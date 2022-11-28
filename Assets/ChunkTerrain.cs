@@ -115,15 +115,24 @@ public class ChunkTerrain : MonoBehaviour
     }
     private float uvwidth = 0.0625f;
     private float onepixel = 0.0034722222222222f;
+    public List<CombineEgg> combs = new();
     Vector3 vec2;
     Vector3 vec3;
+    public struct CombineEgg
+    {
+        public Vector3 localPosition;
+        public Mesh mesh;
+    }
+
     public void RebuildMesh()
     {
         //Debug.Log("Rebuilding Mesh");
+        combs.Clear();
         vertices.Clear();
         triangles.Clear();
         uvs.Clear();
         Mesh mesh = new Mesh();
+        
         for (int i = 0; i < 16; i++)
         {
             for(int j= 0; j < 64; j++)
@@ -136,8 +145,18 @@ public class ChunkTerrain : MonoBehaviour
                     vec3.x = i;
                     vec3.y = j;
                     vec3.z = k;
+                    var thing = new Vector3((int)this.transform.position.x + i, j, (int)this.transform.position.z + k);
+                    if (draw.worldFoliage.ContainsKey(thing))
+                    {
+                        CombineEgg comby = new();
+
+                        var meshy = draw.foliageDict[draw.worldFoliage[thing]];
+                        comby.mesh = meshy;
+                        comby.localPosition = vec2;
+                        combs.Add(comby);
+                    }
                     if (thechunk.ContainsKey(vec2))
-                    { 
+                    {
                         if (thechunk[vec2].id != 0 && !blockstore.modelIDs.Contains(thechunk[vec2].id))
                         {
                             vec2.y -= 1;
@@ -390,6 +409,26 @@ public class ChunkTerrain : MonoBehaviour
                 
             }
         }
+        if (combs.Count > 0)
+        {
+            Mesh secondmesh = ActuallyCombineMeshes(combs);
+            
+            this.gameObject.transform.GetChild(0).GetComponent<MeshRenderer>().enabled = true;
+            this.gameObject.transform.GetChild(0).GetComponent<MeshFilter>().mesh = secondmesh;
+            this.gameObject.transform.GetChild(0).GetComponent<MeshFilter>().sharedMesh = secondmesh;
+            this.gameObject.transform.GetChild(0).GetComponent<MeshCollider>().enabled = true;
+            this.gameObject.transform.GetChild(0).GetComponent<MeshCollider>().sharedMesh = secondmesh;
+            Debug.Log("Combscount: " + combs.Count + "!!");
+           
+        }
+        else
+        {
+            this.gameObject.transform.GetChild(0).GetComponent<MeshRenderer>().enabled = false;
+            this.gameObject.transform.GetChild(0).GetComponent<MeshCollider>().enabled = false;
+        }
+
+
+
         mesh.bounds = new Bounds(Vector3.zero, Vector3.one * 128);
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
@@ -403,7 +442,44 @@ public class ChunkTerrain : MonoBehaviour
         this.gameObject.GetComponent<MeshCollider>().sharedMesh = mesh;
         this.isRebuilt = true;
     }
+    Mesh ActuallyCombineMeshes(List<CombineEgg> coms)
+    {
+        Mesh m = new();
 
+        List<Vector3> verts = new();
+        List<int> tris = new();
+        List<Vector2> uvs = new();
+        for (int i = 0; i < coms.Count; i++)
+        {
+            //tris
+            for (int z = 0; z < coms[i].mesh.triangles.Length; z++)
+            {
+                tris.Add(coms[i].mesh.triangles[z] + verts.Count);
+
+            }
+            //verts
+            for (int z = 0; z < coms[i].mesh.vertices.Length; z++)
+            {
+                Vector3 coo = coms[i].mesh.vertices[z]*2;
+                Vector3 theTransform = coms[i].localPosition;
+                verts.Add(new Vector3(coo.x + theTransform.x - 1, coo.y + theTransform.y, coo.z + theTransform.z + 0.5f)); //offset on z and x to center on block!
+
+            }
+            //uvs
+            for (int z = 0; z < coms[i].mesh.uv.Length; z++)
+            {
+                uvs.Add(coms[i].mesh.uv[z]);
+
+            }
+        }
+        m.vertices = verts.ToArray();
+        m.triangles = tris.ToArray();
+        m.uv = uvs.ToArray();
+        m.bounds = new Bounds(Vector3.zero, Vector3.one * 128);
+        m.RecalculateNormals();
+
+        return m;
+    }
     // Update is called once per frame
     void Update()
     {
