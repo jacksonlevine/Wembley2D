@@ -10,6 +10,7 @@ public class Blocks : MonoBehaviour
         public Vector2 topTex;
         public Vector2 bottomTex;
         public Vector2 sidesTex;
+        public int fol;
     }
 
     public Drawer draw;
@@ -77,6 +78,7 @@ public class Blocks : MonoBehaviour
         air = new Block();
         air.id = 0;
         blocks.Add(air.id, air);
+        air.fol = 0;
 
         block = new Block();
         block.id = 1;
@@ -84,7 +86,7 @@ public class Blocks : MonoBehaviour
         block.sidesTex = new Vector2(1f/16f, 0);
         block.bottomTex = new Vector2(2f/16f, 0);
         blocks.Add(block.id, block);
-
+        block.fol = 0;
 
         
 
@@ -94,6 +96,7 @@ public class Blocks : MonoBehaviour
         stone.sidesTex = new Vector2(7f / 16f, 0);
         stone.bottomTex = new Vector2(7f / 16f, 0);
         blocks.Add(stone.id, stone);
+        stone.fol = 0;
 
         dirt = new Block();
         dirt.id = 3;
@@ -101,6 +104,7 @@ public class Blocks : MonoBehaviour
         dirt.sidesTex = new Vector2(2f / 16f, 0);
         dirt.bottomTex = new Vector2(2f / 16f, 0);
         blocks.Add(dirt.id, dirt);
+        dirt.fol = 0;
 
         gearblock = new Block();
         gearblock.id = 4;
@@ -310,7 +314,6 @@ public class Blocks : MonoBehaviour
         mesh1.RecalculateNormals();
         lever.transform.GetChild(1).GetChild(0).gameObject.GetComponent<MeshFilter>().mesh = mesh1;
         lever.transform.GetChild(1).GetChild(0).gameObject.GetComponent<MeshCollider>().sharedMesh = mesh1;
-
 
 
         for (int i = -20; i < 20; i++)

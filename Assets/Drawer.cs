@@ -73,7 +73,7 @@ public class Drawer : MonoBehaviour
     int index = 0;
     public void InitializeFoliageBuffers()
     {
-        int kernel = compute.FindKernel("CSMain");
+       /* int kernel = compute.FindKernel("CSMain");
         index = 0;
         //mats.Clear();
         bufferArgs.Clear();
@@ -144,7 +144,7 @@ public class Drawer : MonoBehaviour
                 compute.SetVector("_PusherPosition", pusher.position);
                 compute.Dispatch(kernel, foliagePoses[i].Count, 1, 1);
             }
-        }
+        }*/
     }
 
 
@@ -233,15 +233,20 @@ public class Drawer : MonoBehaviour
                 chunks.Add(new Vector3(i, 0, j), c);
             }
         }
-
-       for(int i = 0; i < 40; i++)
+        worldMachines.Add(dimension, new Dictionary<Vector3, MachineNode>());
+       for (int i = 0; i < 40; i++)
         {
             for (int j = 0; j < 40; j++)
             {
                 if(Random.Range(0, 20) < 2)
                 {
-                    GameObject t = Instantiate(tree, new Vector3(i*20, Random.Range(-20, -10), j*20), Quaternion.identity);
+                    var vecc = new Vector3(i * 20, Random.Range(-20, -10), j * 20);
+                    GameObject t = Instantiate(tree, vecc, Quaternion.identity);
                     t.SetActive(true);
+                    MachineNode mach = new();
+                    mach.id = 15;
+                    mach.linkedObject = t;
+                    worldMachines[dimension].Add(vecc, mach);
                 }
             }
         }
@@ -334,11 +339,25 @@ public class Drawer : MonoBehaviour
                             }
                             if (Random.Range(0, 50) == 2)
                             {
-                                Vector3 thing = new Vector3((x * 16) + vec.x, vec.y+1, (z * 16) + vec.z);
-                                if (!worldFoliage.ContainsKey(thing))
+
+                                        var origblock = blockstore.block;
+                                        var block = new Blocks.Block();
+                                        block.id = origblock.id;
+                                        block.topTex = origblock.topTex;
+                                        block.bottomTex = origblock.bottomTex;
+                                        block.sidesTex = origblock.sidesTex;
+                                        block.fol = Random.Range(0, 9);
+
+                                if (thechunk.ContainsKey(vec))
                                 {
-                                    worldFoliage.Add(thing, Random.Range(0, 9));
+                                    thechunk[vec] = block;
                                 }
+                                else
+                                {
+                                    thechunk.Add(vec, block);
+                                }
+
+
                             };
                             vec.y = j - 1;
                             if (thechunk.ContainsKey(vec))

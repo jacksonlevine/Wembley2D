@@ -132,7 +132,7 @@ public class ChunkTerrain : MonoBehaviour
         triangles.Clear();
         uvs.Clear();
         Mesh mesh = new Mesh();
-        
+        var chunkpos = new Vector2((int)this.transform.position.x/16, (int)this.transform.position.z / 16);
         for (int i = 0; i < 16; i++)
         {
             for(int j= 0; j < 64; j++)
@@ -145,14 +145,13 @@ public class ChunkTerrain : MonoBehaviour
                     vec3.x = i;
                     vec3.y = j;
                     vec3.z = k;
-                    var thing = new Vector3((int)this.transform.position.x + i, j, (int)this.transform.position.z + k);
-                    if (draw.worldFoliage.ContainsKey(thing))
+                    if (draw.worldAllChunks[dimension][chunkpos][vec2].fol != 0)
                     {
                         CombineEgg comby = new();
 
-                        var meshy = draw.foliageDict[draw.worldFoliage[thing]];
+                        var meshy = draw.foliageDict[draw.worldAllChunks[dimension][chunkpos][vec2].fol];
                         comby.mesh = meshy;
-                        comby.localPosition = vec2;
+                        comby.localPosition = vec2 + this.transform.up;
                         combs.Add(comby);
                     }
                     if (thechunk.ContainsKey(vec2))
@@ -462,7 +461,7 @@ public class ChunkTerrain : MonoBehaviour
             {
                 Vector3 coo = coms[i].mesh.vertices[z]*2;
                 Vector3 theTransform = coms[i].localPosition;
-                verts.Add(new Vector3(coo.x + theTransform.x - 1, coo.y + theTransform.y, coo.z + theTransform.z + 0.5f)); //offset on z and x to center on block!
+                verts.Add(new Vector3(coo.x + theTransform.x - 0.5f, coo.y + theTransform.y, coo.z + theTransform.z + 0.5f)); //offset on z and x to center on block!
 
             }
             //uvs
