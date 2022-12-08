@@ -9,7 +9,14 @@ public class ChunkTerrain : MonoBehaviour
     public List<Vector3> vertices = new();
     public List<int> triangles = new();
     public List<Vector2> uvs = new();
+
+
+    public List<Vector3> vertices2 = new();
+    public List<int> triangles2 = new();
+    public List<Vector2> uvs2 = new();
     public Drawer draw;
+
+
 
     public int dimension = 0;
     Vector3 vec = new();
@@ -131,7 +138,16 @@ public class ChunkTerrain : MonoBehaviour
         vertices.Clear();
         triangles.Clear();
         uvs.Clear();
+
+        int w = blockstore.water.id;
+
+        vertices2.Clear();
+        triangles2.Clear();
+        uvs2.Clear();
         Mesh mesh = new Mesh();
+        Mesh watermesh = new Mesh();
+
+
         var chunkpos = new Vector2((int)this.transform.position.x/16, (int)this.transform.position.z / 16);
         for (int i = 0; i < 16; i++)
         {
@@ -156,12 +172,267 @@ public class ChunkTerrain : MonoBehaviour
                     }
                     if (thechunk.ContainsKey(vec2))
                     {
-                        if (thechunk[vec2].id != 0 && !blockstore.modelIDs.Contains(thechunk[vec2].id))
+                        //WATER BLOCKS
+                        if (thechunk[vec2].id == blockstore.water.id)
                         {
                             vec2.y -= 1;
                             if (thechunk.ContainsKey(vec2))
                             {
                                 if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                {
+                                    triangles2.Add(vertices2.Count + 1);
+                                    triangles2.Add(vertices2.Count + 0);
+                                    triangles2.Add(vertices2.Count + 3);
+                                    triangles2.Add(vertices2.Count + 2);
+                                    triangles2.Add(vertices2.Count + 1);
+                                    triangles2.Add(vertices2.Count + 3);
+                                    vertices2.Add(new Vector3(i + 0, j + 0, k + 0));
+                                    vertices2.Add(new Vector3(i + 0, j + 0, k + 1));
+                                    vertices2.Add(new Vector3(i + 1, j + 0, k + 1));
+                                    vertices2.Add(new Vector3(i + 1, j + 0, k + 0));// bottom face
+                                    uvs2.Add(new Vector2(thechunk[vec3].bottomTex.x + 0 + onepixel, thechunk[vec3].bottomTex.y + uvwidth - onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].bottomTex.x + 0 + onepixel, thechunk[vec3].bottomTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].bottomTex.x + uvwidth - onepixel, thechunk[vec3].bottomTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].bottomTex.x + uvwidth - onepixel, thechunk[vec3].bottomTex.y + uvwidth - onepixel));
+
+
+                                }
+                            }
+                            vec2.y += 2;
+                            if (thechunk.ContainsKey(vec2))
+                            {
+                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                {
+                                    triangles2.Add(vertices2.Count + 0);
+                                    triangles2.Add(vertices2.Count + 1);
+                                    triangles2.Add(vertices2.Count + 2);
+                                    triangles2.Add(vertices2.Count + 0);
+                                    triangles2.Add(vertices2.Count + 2);
+                                    triangles2.Add(vertices2.Count + 3);
+                                    vertices2.Add(new Vector3(i + 0, j + 1, k + 0));
+                                    vertices2.Add(new Vector3(i + 0, j + 1, k + 1));
+                                    vertices2.Add(new Vector3(i + 1, j + 1, k + 1));
+                                    vertices2.Add(new Vector3(i + 1, j + 1, k + 0));// top face
+                                    uvs2.Add(new Vector2(thechunk[vec3].topTex.x + 0 + onepixel, thechunk[vec3].topTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].topTex.x + 0 + onepixel, thechunk[vec3].topTex.y + uvwidth - onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].topTex.x + uvwidth - onepixel, thechunk[vec3].topTex.y + uvwidth - onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].topTex.x + uvwidth - onepixel, thechunk[vec3].topTex.y + 0 + onepixel));
+
+                                }
+                            }
+                            vec2.y = j;
+                            vec2.x += 1;
+                            if (thechunk.ContainsKey(vec2))
+                            {
+                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                {
+                                    triangles2.Add(vertices2.Count + 0);
+                                    triangles2.Add(vertices2.Count + 3);
+                                    triangles2.Add(vertices2.Count + 2);
+                                    triangles2.Add(vertices2.Count + 0);
+                                    triangles2.Add(vertices2.Count + 2);
+                                    triangles2.Add(vertices2.Count + 1);
+                                    vertices2.Add(new Vector3(i + 1, j + 0, k + 0));
+                                    vertices2.Add(new Vector3(i + 1, j + 0, k + 1));
+                                    vertices2.Add(new Vector3(i + 1, j + 1, k + 1));
+                                    vertices2.Add(new Vector3(i + 1, j + 1, k + 0));// right face
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+
+
+                                }
+                            }
+                            else
+                            {
+                                if (draw.chunks.ContainsKey(new Vector3(((int)transform.position.x / 16) + 1, 0, ((int)transform.position.z / 16))))
+                                {
+                                    if (draw.chunks[new Vector3(((int)transform.position.x / 16) + 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk.ContainsKey(new Vector3(0, j, k)))
+                                    {
+                                        if (draw.chunks[new Vector3(((int)transform.position.x / 16) + 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(0, j, k)].id == 0 || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16) + 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(0, j, k)].id))
+                                        {
+                                            triangles2.Add(vertices2.Count + 0);
+                                            triangles2.Add(vertices2.Count + 3);
+                                            triangles2.Add(vertices2.Count + 2);
+                                            triangles2.Add(vertices2.Count + 0);
+                                            triangles2.Add(vertices2.Count + 2);
+                                            triangles2.Add(vertices2.Count + 1);
+                                            vertices2.Add(new Vector3(i + 1, j + 0, k + 0));
+                                            vertices2.Add(new Vector3(i + 1, j + 0, k + 1));
+                                            vertices2.Add(new Vector3(i + 1, j + 1, k + 1));
+                                            vertices2.Add(new Vector3(i + 1, j + 1, k + 0));// right face
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                        }
+                                    }
+                                }
+                            }
+                            vec2.x -= 2;
+                            if (thechunk.ContainsKey(vec2))
+                            {
+                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                {
+                                    triangles2.Add(vertices2.Count + 1);
+                                    triangles2.Add(vertices2.Count + 2);
+                                    triangles2.Add(vertices2.Count + 3);
+                                    triangles2.Add(vertices2.Count + 1);
+                                    triangles2.Add(vertices2.Count + 3);
+                                    triangles2.Add(vertices2.Count + 0);
+                                    vertices2.Add(new Vector3(i + 0, j + 0, k + 0));
+                                    vertices2.Add(new Vector3(i + 0, j + 0, k + 1));
+                                    vertices2.Add(new Vector3(i + 0, j + 1, k + 1));
+                                    vertices2.Add(new Vector3(i + 0, j + 1, k + 0));// left face
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+
+
+                                }
+                            }
+                            else
+                            {
+                                if (draw.chunks.ContainsKey(new Vector3(((int)transform.position.x / 16) - 1, 0, ((int)transform.position.z / 16))))
+                                {
+                                    if (draw.chunks[new Vector3(((int)transform.position.x / 16) - 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk.ContainsKey(new Vector3(15, j, k)))
+                                    {
+                                        if (draw.chunks[new Vector3(((int)transform.position.x / 16) - 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15, j, k)].id == 0 || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16) - 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15, j, k)].id))
+                                        {
+                                            triangles2.Add(vertices2.Count + 1);
+                                            triangles2.Add(vertices2.Count + 2);
+                                            triangles2.Add(vertices2.Count + 3);
+                                            triangles2.Add(vertices2.Count + 1);
+                                            triangles2.Add(vertices2.Count + 3);
+                                            triangles2.Add(vertices2.Count + 0);
+                                            vertices2.Add(new Vector3(i + 0, j + 0, k + 0));
+                                            vertices2.Add(new Vector3(i + 0, j + 0, k + 1));
+                                            vertices2.Add(new Vector3(i + 0, j + 1, k + 1));
+                                            vertices2.Add(new Vector3(i + 0, j + 1, k + 0));// left face
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                        }
+                                    }
+                                }
+                            }
+                            vec2.x++;
+                            vec2.z += 1;
+                            if (thechunk.ContainsKey(vec2))
+                            {
+                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                {
+                                    triangles2.Add(vertices2.Count + 1);
+                                    triangles2.Add(vertices2.Count + 3);
+                                    triangles2.Add(vertices2.Count + 2);
+                                    triangles2.Add(vertices2.Count + 1);
+                                    triangles2.Add(vertices2.Count + 2);
+                                    triangles2.Add(vertices2.Count + 0);
+                                    vertices2.Add(new Vector3(i + 0, j + 0, k + 1));
+                                    vertices2.Add(new Vector3(i + 1, j + 0, k + 1));
+                                    vertices2.Add(new Vector3(i + 0, j + 1, k + 1));
+                                    vertices2.Add(new Vector3(i + 1, j + 1, k + 1));//back face
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+
+
+                                }
+                            }
+                            else
+                            {
+                                if (draw.chunks.ContainsKey(new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) + 1)))
+                                {
+                                    if (draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) + 1)].GetComponent<ChunkTerrain>().thechunk.ContainsKey(new Vector3(i, j, 0)))
+                                    {
+                                        if (draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) + 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 0)].id == 0 || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) + 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 0)].id))
+                                        {
+                                            triangles2.Add(vertices2.Count + 1);
+                                            triangles2.Add(vertices2.Count + 3);
+                                            triangles2.Add(vertices2.Count + 2);
+                                            triangles2.Add(vertices2.Count + 1);
+                                            triangles2.Add(vertices2.Count + 2);
+                                            triangles2.Add(vertices2.Count + 0);
+                                            vertices2.Add(new Vector3(i + 0, j + 0, k + 1));
+                                            vertices2.Add(new Vector3(i + 1, j + 0, k + 1));
+                                            vertices2.Add(new Vector3(i + 0, j + 1, k + 1));
+                                            vertices2.Add(new Vector3(i + 1, j + 1, k + 1));//back face
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                        }
+                                    }
+                                }
+                            }
+                            vec2.z -= 2;
+                            if (thechunk.ContainsKey(vec2))
+                            {
+                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                {
+                                    triangles2.Add(vertices2.Count + 0);
+                                    triangles2.Add(vertices2.Count + 2);
+                                    triangles2.Add(vertices2.Count + 3);
+                                    triangles2.Add(vertices2.Count + 0);
+                                    triangles2.Add(vertices2.Count + 3);
+                                    triangles2.Add(vertices2.Count + 1);
+                                    vertices2.Add(new Vector3(i + 0, j + 0, k + 0));
+                                    vertices2.Add(new Vector3(i + 1, j + 0, k + 0));
+                                    vertices2.Add(new Vector3(i + 0, j + 1, k + 0));
+                                    vertices2.Add(new Vector3(i + 1, j + 1, k + 0));//front face
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                    uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+
+
+                                }
+                            }
+                            else
+                            {
+                                if (draw.chunks.ContainsKey(new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) - 1)))
+                                {
+                                    if (draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) - 1)].GetComponent<ChunkTerrain>().thechunk.ContainsKey(new Vector3(i, j, 15)))
+                                    {
+                                        if (draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) - 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 15)].id == 0 || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) - 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 15)].id))
+                                        {
+                                            triangles2.Add(vertices2.Count + 0);
+                                            triangles2.Add(vertices2.Count + 2);
+                                            triangles2.Add(vertices2.Count + 3);
+                                            triangles2.Add(vertices2.Count + 0);
+                                            triangles2.Add(vertices2.Count + 3);
+                                            triangles2.Add(vertices2.Count + 1);
+                                            vertices2.Add(new Vector3(i + 0, j + 0, k + 0));
+                                            vertices2.Add(new Vector3(i + 1, j + 0, k + 0));
+                                            vertices2.Add(new Vector3(i + 0, j + 1, k + 0));
+                                            vertices2.Add(new Vector3(i + 1, j + 1, k + 0));//front face
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + 0 + onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + 0 + onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                            uvs2.Add(new Vector2(thechunk[vec3].sidesTex.x + uvwidth - onepixel, thechunk[vec3].sidesTex.y + uvwidth - onepixel));
+                                        }
+                                    }
+                                }
+                            }
+                            vec2.z++;
+                        }
+                        vec2.x = i;
+                        vec2.y = j;
+                        vec2.z = k;
+                        vec3.x = i;
+                        vec3.y = j;
+                        vec3.z = k;
+                        //NORMAL BLOCKS
+                        if (!blockstore.clearIDs.Contains(thechunk[vec2].id) && !blockstore.modelIDs.Contains(thechunk[vec2].id))
+                        {
+                            vec2.y -= 1;
+                            if (thechunk.ContainsKey(vec2))
+                            {
+                                if (blockstore.clearIDs.Contains(thechunk[vec2].id) || blockstore.modelIDs.Contains(thechunk[vec2].id))
                                 {
                                     triangles.Add(vertices.Count + 1);
                                     triangles.Add(vertices.Count + 0);
@@ -184,7 +455,7 @@ public class ChunkTerrain : MonoBehaviour
                             vec2.y += 2;
                             if (thechunk.ContainsKey(vec2))
                             {
-                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                if (blockstore.clearIDs.Contains(thechunk[vec2].id) || blockstore.modelIDs.Contains(thechunk[vec2].id))
                                 {
                                     triangles.Add(vertices.Count + 0);
                                     triangles.Add(vertices.Count + 1);
@@ -207,7 +478,7 @@ public class ChunkTerrain : MonoBehaviour
                             vec2.x += 1;
                             if (thechunk.ContainsKey(vec2))
                             {
-                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                if (blockstore.clearIDs.Contains(thechunk[vec2].id) || blockstore.modelIDs.Contains(thechunk[vec2].id))
                                 {
                                     triangles.Add(vertices.Count + 0);
                                     triangles.Add(vertices.Count + 3);
@@ -233,7 +504,7 @@ public class ChunkTerrain : MonoBehaviour
                                 {
                                     if (draw.chunks[new Vector3(((int)transform.position.x / 16) + 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk.ContainsKey(new Vector3(0, j, k)))
                                     {
-                                        if (draw.chunks[new Vector3(((int)transform.position.x / 16) + 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(0, j, k)].id == 0 || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16) + 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(0, j, k)].id))
+                                        if (blockstore.clearIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16) + 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(0, j, k)].id) || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16) + 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(0, j, k)].id))
                                         {
                                             triangles.Add(vertices.Count + 0);
                                             triangles.Add(vertices.Count + 3);
@@ -256,7 +527,7 @@ public class ChunkTerrain : MonoBehaviour
                             vec2.x -= 2;
                             if (thechunk.ContainsKey(vec2))
                             {
-                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                if (blockstore.clearIDs.Contains(thechunk[vec2].id) || blockstore.modelIDs.Contains(thechunk[vec2].id))
                                 {
                                     triangles.Add(vertices.Count + 1);
                                     triangles.Add(vertices.Count + 2);
@@ -282,7 +553,7 @@ public class ChunkTerrain : MonoBehaviour
                                 {
                                     if (draw.chunks[new Vector3(((int)transform.position.x / 16) - 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk.ContainsKey(new Vector3(15, j, k)))
                                     {
-                                        if (draw.chunks[new Vector3(((int)transform.position.x / 16) - 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15, j, k)].id == 0 || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16) - 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15, j, k)].id))
+                                        if (blockstore.clearIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16) - 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15, j, k)].id) || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16) - 1, 0, ((int)transform.position.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15, j, k)].id))
                                         {
                                             triangles.Add(vertices.Count + 1);
                                             triangles.Add(vertices.Count + 2);
@@ -306,7 +577,7 @@ public class ChunkTerrain : MonoBehaviour
                             vec2.z += 1;
                             if (thechunk.ContainsKey(vec2))
                             {
-                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                if (blockstore.clearIDs.Contains(thechunk[vec2].id) || blockstore.modelIDs.Contains(thechunk[vec2].id))
                                 {
                                     triangles.Add(vertices.Count + 1);
                                     triangles.Add(vertices.Count + 3);
@@ -332,7 +603,7 @@ public class ChunkTerrain : MonoBehaviour
                                 {
                                     if (draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) + 1)].GetComponent<ChunkTerrain>().thechunk.ContainsKey(new Vector3(i, j, 0)))
                                     {
-                                        if (draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) + 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 0)].id == 0 || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) + 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 0)].id))
+                                        if (blockstore.clearIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) + 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 0)].id) || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) + 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 0)].id))
                                         {
                                             triangles.Add(vertices.Count + 1);
                                             triangles.Add(vertices.Count + 3);
@@ -355,7 +626,7 @@ public class ChunkTerrain : MonoBehaviour
                             vec2.z -= 2;
                             if (thechunk.ContainsKey(vec2))
                             {
-                                if (thechunk[vec2].id == 0 || blockstore.modelIDs.Contains(thechunk[vec2].id))
+                                if (blockstore.clearIDs.Contains(thechunk[vec2].id) || blockstore.modelIDs.Contains(thechunk[vec2].id))
                                 {
                                     triangles.Add(vertices.Count + 0);
                                     triangles.Add(vertices.Count + 2);
@@ -381,7 +652,7 @@ public class ChunkTerrain : MonoBehaviour
                                 {
                                     if (draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) - 1)].GetComponent<ChunkTerrain>().thechunk.ContainsKey(new Vector3(i, j, 15)))
                                     {
-                                        if (draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) - 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 15)].id == 0 || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) - 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 15)].id))
+                                        if (blockstore.clearIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) - 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 15)].id) || blockstore.modelIDs.Contains(draw.chunks[new Vector3(((int)transform.position.x / 16), 0, ((int)transform.position.z / 16) - 1)].GetComponent<ChunkTerrain>().thechunk[new Vector3(i, j, 15)].id))
                                         {
                                             triangles.Add(vertices.Count + 0);
                                             triangles.Add(vertices.Count + 2);
@@ -435,6 +706,19 @@ public class ChunkTerrain : MonoBehaviour
         mesh.RecalculateNormals();
         mesh.RecalculateTangents();
         mesh.OptimizeReorderVertexBuffer();
+
+
+        watermesh.bounds = new Bounds(Vector3.zero, Vector3.one * 128);
+        watermesh.vertices = vertices2.ToArray();
+        watermesh.triangles = triangles2.ToArray();
+        watermesh.SetUVs(0, uvs2);
+        watermesh.RecalculateNormals();
+        watermesh.RecalculateTangents();
+        watermesh.OptimizeReorderVertexBuffer();
+
+        this.transform.GetChild(1).gameObject.GetComponent<MeshRenderer>().enabled = true;
+        this.transform.GetChild(1).gameObject.GetComponent<MeshFilter>().mesh = watermesh;
+        this.transform.GetChild(1).gameObject.GetComponent<MeshCollider>().sharedMesh = watermesh;
 
         this.gameObject.GetComponent<MeshRenderer>().enabled = true;
         this.gameObject.GetComponent<MeshFilter>().mesh = mesh;

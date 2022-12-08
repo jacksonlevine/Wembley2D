@@ -233,7 +233,10 @@ public class Drawer : MonoBehaviour
                 chunks.Add(new Vector3(i, 0, j), c);
             }
         }
-        worldMachines.Add(dimension, new Dictionary<Vector3, MachineNode>());
+        if (!worldMachines.ContainsKey(dimension))
+        {
+            worldMachines.Add(dimension, new Dictionary<Vector3, MachineNode>());
+        }
        for (int i = 0; i < 40; i++)
         {
             for (int j = 0; j < 40; j++)
@@ -327,7 +330,7 @@ public class Drawer : MonoBehaviour
                         vec.x = i;
                         vec.y = j;
                         vec.z = k;
-                        if (j < (Mathf.PerlinNoise((float)((x * 16) + vec.x) / 30f, (float)((z * 16) + vec.z) / 30f) * 8))
+                        if (j < (Mathf.PerlinNoise((float)((x * 16) + vec.x) / 30f, (float)((z * 16) + vec.z) / 30f) * 16))
                         {
                             if (thechunk.ContainsKey(vec))
                             {
@@ -343,7 +346,7 @@ public class Drawer : MonoBehaviour
                                         var origblock = blockstore.block;
                                         var block = new Blocks.Block();
                                         block.id = origblock.id;
-                                        block.topTex = origblock.topTex;
+                                         block.topTex = origblock.topTex;
                                         block.bottomTex = origblock.bottomTex;
                                         block.sidesTex = origblock.sidesTex;
                                         block.fol = Random.Range(0, 9);
@@ -372,7 +375,14 @@ public class Drawer : MonoBehaviour
                         }
                         else
                         {
-                            thechunk.Add(vec, blockstore.air);
+                            if (j < 7)
+                            {
+                                thechunk.Add(vec, blockstore.water);
+                            }
+                            else
+                            {
+                                thechunk.Add(vec, blockstore.air);
+                            }
                         }
 
                     }
@@ -390,7 +400,7 @@ public class Drawer : MonoBehaviour
                         vec.x = i;
                         vec.y = j;
                         vec.z = k;
-                        if (j < (Mathf.PerlinNoise((dimension*100)+(float)((x * 16) + vec.x) / 3f, (dimension * 100) + (float)((z * 16) + vec.z) / 3f) * 4))
+                        if (j < (Mathf.PerlinNoise((dimension * 100) + (float)((x * 16) + vec.x) / 3f, (dimension * 100) + (float)((z * 16) + vec.z) / 3f) * 4))
                         {
                             if (thechunk.ContainsKey(vec))
                             {
@@ -419,22 +429,40 @@ public class Drawer : MonoBehaviour
                 }
             }
         }
+
+        if (Random.Range(0, 500) == 3)
+        {
+            soc.BuildBuild(Random.Range(0, 3), Random.Range(0, 3), thechunk, dimension, (int)cp.x, (int)cp.y);
+        }
         if (this.worldAllChunks.ContainsKey(dimen))
         {
-            this.worldAllChunks[dimen].Add(cp, thechunk);
+            if (!this.worldAllChunks[dimen].ContainsKey(cp))
+            {
+                this.worldAllChunks[dimen].Add(cp, thechunk);
+            }
+            
         } else
         {
             this.worldAllChunks.Add(dimen, new Dictionary<Vector2, Dictionary<Vector3, Blocks.Block>>());
             this.worldAllChunks[dimen].Add(cp, thechunk);
         }
+        if (!this.worldMachines.ContainsKey(dimen))
+        {
+            this.worldMachines.Add(dimen, new Dictionary<Vector3, MachineNode>());
+
+
+        }
+
+        
     }
     bool thisdone = false;
-
+    public SocietyHandler soc;
     public Camera mainCam;
     // Update is called once per frame
     void Update()
     {
         int kernel = compute.FindKernel("CSMain");
+
 
         compute.SetVector("_PusherPosition", pusher.position);
         // We used to just be able to use `population` here, but it looks like a Unity update imposed a thread limit (65535) on my device.

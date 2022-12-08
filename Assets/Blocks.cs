@@ -54,6 +54,10 @@ public class Blocks : MonoBehaviour
     public Block springPadItem;
     public GameObject springPad;
 
+    public Block wood;
+
+    public Block water;
+
 
     public Dictionary<int, GameObject> IDtoModel = new();
 
@@ -61,6 +65,8 @@ public class Blocks : MonoBehaviour
 
     public List<int> itemIDs = new();
 
+
+    public List<int> clearIDs = new();
     
 
 
@@ -175,6 +181,22 @@ public class Blocks : MonoBehaviour
         modelIDs.Add(14);
         IDtoModel.Add(springPadItem.id, springPad);
 
+        wood = new Block();
+        wood.id = 16;
+        wood.topTex = new Vector2(9f/16f, 0);
+        wood.sidesTex = new Vector2(9f/16f, 0);
+        wood.bottomTex = new Vector2(9f/16f, 0);
+        blocks.Add(wood.id, wood);
+
+        water = new Block();
+        water.id = 17;
+        water.topTex = new Vector2(11f / 16f, 0);
+        water.sidesTex = new Vector2(11f / 16f, 0);
+        water.bottomTex = new Vector2(11f / 16f, 0);
+        blocks.Add(water.id, water);
+
+        clearIDs.Add(air.id);
+        clearIDs.Add(water.id);
 
         //building the mesh for lever
 

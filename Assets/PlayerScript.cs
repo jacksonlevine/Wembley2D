@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
@@ -192,9 +193,11 @@ public class PlayerScript : MonoBehaviour
     public int mousedSlots = 0;
     public bool isMouseCurrentlyOnSlot = false;
 
+    public Camera actualCamera;
+
     public void SwitchDimension()
     {
-        cc.Move(transform.up * 20);
+        cc.Move(transform.up * 7);
 
         //unload all these
         if (draw.worldMachines.ContainsKey(draw.dimension))
@@ -216,11 +219,11 @@ public class PlayerScript : MonoBehaviour
         }
         if (draw.dimension == 0)
         {
-            Camera.main.gameObject.GetComponent<Skybox>().material.SetTexture("_MainTex", skyBoxTextures[0]);
+            actualCamera.gameObject.GetComponent<Skybox>().material.SetTexture("_MainTex", skyBoxTextures[0]);
         }
         else
         {
-            Camera.main.gameObject.GetComponent<Skybox>().material.SetTexture("_MainTex", skyBoxTextures[1]);
+            actualCamera.gameObject.GetComponent<Skybox>().material.SetTexture("_MainTex", skyBoxTextures[1]);
         }
         draw.remeshQueue.Clear();
 
@@ -842,14 +845,18 @@ public class PlayerScript : MonoBehaviour
             Camera.main.transform.position = thing + this.transform.right * (Mathf.Sin(walktime * 8) / 8) + (this.transform.up * (Mathf.Sin(walktime * 4) / 8));
 
         }
-
-        if (cc.isGrounded || this.transform.position.y <= 1.1)
+        Ray ray = new Ray();
+        ray.origin = transform.position;
+        ray.direction = transform.up * -1;
+        RaycastHit hit = new();
+        Physics.Raycast(ray, out hit, 1.5f);
+        if (cc.isGrounded || this.transform.position.y <= 1.1 || hit.collider != null)
         {
             timefalling = 0;
             velocity.y = Mathf.Clamp(velocity.y, 0, 10);
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKey (KeyCode.Space))
             {
-                velocity.y += 20f;
+                velocity.y += 40f;
             }
         }
 
@@ -1108,162 +1115,195 @@ public class PlayerScript : MonoBehaviour
     }
 
     int colorIndex = 1;
-    bool SetBlock(int x, int y, int z, int id)
+    public bool SetBlock(int x, int y, int z, int id)
     {
         Vector3 thing = new Vector3(x, y, z);
         Vector3 machspot = thing;
         bool machThatNeedsRemesh = false;
-        if (!blockstore.modelIDs.Contains(id) && !blockstore.itemIDs.Contains(id) && myblockpos != machspot && id != 0)
+        if (draw.worldAllChunks.ContainsKey(dimension))
         {
-            machine = false;
-            if (thing.x < 0 && thing.z > 0)
-            {
-                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
-            }
-            if (thing.x < 0 && thing.z < 0)
-            {
-                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
-            }
-            if (thing.x > 0 && thing.z < 0)
-            {
-                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
-            }
-            if (thing.x > 0 && thing.z > 0)
-            {
-                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
-            }
-        }
-        else if (!blockstore.itemIDs.Contains(id) && blockstore.modelIDs.Contains(id))
-        {
-            machine = true;
-            if (!draw.worldMachines[dimension].ContainsKey(machspot))
-            {
-                GameObject g = Instantiate(blockstore.IDtoModel[id], machspot, Quaternion.identity);
-                Drawer.MachineNode thismach = new Drawer.MachineNode();
-                thismach.id = id;
-                thismach.linkedObject = g;
-                draw.worldMachines[dimension].Add(machspot, thismach);
-                if(id == 11)
+            if(draw.worldMachines.ContainsKey(dimension)) {
+                if (draw.worldAllChunks[dimension].ContainsKey(new Vector2(x / 16, z / 16)))
                 {
-                    machThatNeedsRemesh = true;
-
-                    if (thing.x < 0 && thing.z > 0)
+                    if (!blockstore.modelIDs.Contains(id) && !blockstore.itemIDs.Contains(id) && myblockpos != machspot && id != 0)
                     {
-                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
-                    }
-                    if (thing.x < 0 && thing.z < 0)
-                    {
-                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
-                    }
-                    if (thing.x > 0 && thing.z < 0)
-                    {
-                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
-                    }
-                    if (thing.x > 0 && thing.z > 0)
-                    {
-                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
-                    }
-                }
-
-            } else 
-            {
-                if (draw.worldMachines[dimension][machspot].id == blockstore.gearblock.id)
-                {
-                    if (id == 4)
-                    {
-                        Destroy(draw.worldMachines[dimension][machspot].linkedObject);
-                        draw.worldMachines[dimension].Remove(machspot);
-                        GameObject g = Instantiate(blockstore.IDtoModel[6], machspot, Quaternion.identity);
-                        Drawer.MachineNode thismach = new Drawer.MachineNode();
-                        thismach.id = 6;
-                        thismach.linkedObject = g;
-                        draw.worldMachines[dimension].Add(machspot, thismach);
-                    }
-                }
-            }
-            
-            return true;
-        }
-        else if (blockstore.itemIDs.Contains(id))
-        {
-            if (id == blockstore.wrenchItem.id)
-            {
-                if (draw.worldMachines[dimension].ContainsKey(thing))
-                {
-                    if (draw.worldMachines[dimension][thing].id == 4)
-                    {
-                        var t = draw.worldMachines[dimension][thing].linkedObject.GetComponent<GearController>().rotationIndex;
-                        draw.worldMachines[dimension][thing].linkedObject.GetComponent<GearController>().UpdateRotIndex((t + 1) % 6);
-                    }
-                    if (draw.worldMachines[dimension][thing].id == 6)
-                    {
-                        var t = draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().rotationIndex;
-                        var t2 = draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().rotationIndex2;
-                        if (Input.GetKey(KeyCode.LeftShift))
+                        machine = false;
+                        if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16)))) {
+                            if (thing.x < 0 && thing.z > 0)
+                            {
+                                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
+                            }
+                            if (thing.x < 0 && thing.z < 0)
+                            {
+                                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
+                            }
+                            if (thing.x > 0 && thing.z < 0)
+                            {
+                                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
+                            }
+                            if (thing.x > 0 && thing.z > 0)
+                            {
+                                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
+                            }
+                        } else
                         {
-                            draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().UpdateRot2Index((t2 + 1) % 6);
+                            GameObject c = Instantiate(draw.chunk, new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16)), Quaternion.identity);
+                            draw.chunks.Add(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16)), c);
+                        }
+                    }
+                    else if (!blockstore.itemIDs.Contains(id) && blockstore.modelIDs.Contains(id))
+                    {
+                        machine = true;
+                        if (!draw.worldMachines[dimension].ContainsKey(machspot))
+                        {
+                            GameObject g = Instantiate(blockstore.IDtoModel[id], machspot, Quaternion.identity);
+                            Drawer.MachineNode thismach = new Drawer.MachineNode();
+                            thismach.id = id;
+                            thismach.linkedObject = g;
+                            draw.worldMachines[dimension].Add(machspot, thismach);
+                            if (id == 11)
+                            {
+                                machThatNeedsRemesh = true;
+
+                                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))))
+                                {
+                                    if (thing.x < 0 && thing.z > 0)
+                                    {
+                                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
+                                    }
+                                    if (thing.x < 0 && thing.z < 0)
+                                    {
+                                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
+                                    }
+                                    if (thing.x > 0 && thing.z < 0)
+                                    {
+                                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.blocks[id];
+                                    }
+                                    if (thing.x > 0 && thing.z > 0)
+                                    {
+                                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.blocks[id];
+                                    }
+                                } else
+                                {
+                                    GameObject c = Instantiate(draw.chunk, new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16)), Quaternion.identity);
+                                    draw.chunks.Add(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16)), c);
+                                }
+                            }
+
                         }
                         else
                         {
-                            draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().UpdateRot1Index((t + 1) % 6);
+                            if (draw.worldMachines[dimension][machspot].id == blockstore.gearblock.id)
+                            {
+                                if (id == 4)
+                                {
+                                    Destroy(draw.worldMachines[dimension][machspot].linkedObject);
+                                    draw.worldMachines[dimension].Remove(machspot);
+                                    GameObject g = Instantiate(blockstore.IDtoModel[6], machspot, Quaternion.identity);
+                                    Drawer.MachineNode thismach = new Drawer.MachineNode();
+                                    thismach.id = 6;
+                                    thismach.linkedObject = g;
+                                    draw.worldMachines[dimension].Add(machspot, thismach);
+                                }
+                            }
                         }
-                    }
-                    if (draw.worldMachines[dimension][thing].id == 13)
-                    {
-                        var t = colorIndex;
-                        draw.worldMachines[dimension][thing].linkedObject.transform.GetChild(0).GetChild(0).GetComponent<Light>().color = lampColors[((t + 1) % lampColors.Length)];
-                        colorIndex = ((t + 1) % lampColors.Length);
-                    }
-                }
-                
-            }
-            
-            return false;
-        }
-        else if(id == 0)
-        {
-            if (draw.worldMachines[dimension].ContainsKey(machspot))
-            {
-                if (draw.worldMachines[dimension][machspot].id == blockstore.leverItem.id)
-                {
-                    draw.worldMachines[dimension][machspot].linkedObject.GetComponent<LeverWorker>().Toggle();
-                }
-            }
-            return false;
-        }
 
-        if (!machine || machThatNeedsRemesh == true)
+                        return true;
+                    }
+                    else if (blockstore.itemIDs.Contains(id))
+                    {
+                        if (id == blockstore.wrenchItem.id)
+                        {
+                            if (draw.worldMachines[dimension].ContainsKey(thing))
+                            {
+                                if (draw.worldMachines[dimension][thing].id == 4)
+                                {
+                                    var t = draw.worldMachines[dimension][thing].linkedObject.GetComponent<GearController>().rotationIndex;
+                                    draw.worldMachines[dimension][thing].linkedObject.GetComponent<GearController>().UpdateRotIndex((t + 1) % 6);
+                                }
+                                if (draw.worldMachines[dimension][thing].id == 6)
+                                {
+                                    var t = draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().rotationIndex;
+                                    var t2 = draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().rotationIndex2;
+                                    if (Input.GetKey(KeyCode.LeftShift))
+                                    {
+                                        draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().UpdateRot2Index((t2 + 1) % 6);
+                                    }
+                                    else
+                                    {
+                                        draw.worldMachines[dimension][thing].linkedObject.GetComponent<DoubleGearController>().UpdateRot1Index((t + 1) % 6);
+                                    }
+                                }
+                                if (draw.worldMachines[dimension][thing].id == 13)
+                                {
+                                    var t = colorIndex;
+                                    draw.worldMachines[dimension][thing].linkedObject.transform.GetChild(0).GetChild(0).GetComponent<Light>().color = lampColors[((t + 1) % lampColors.Length)];
+                                    colorIndex = ((t + 1) % lampColors.Length);
+                                }
+                            }
+
+                        }
+
+                        return false;
+                    }
+                    else if (id == 0)
+                    {
+                        if (draw.worldMachines[dimension].ContainsKey(machspot))
+                        {
+                            if (draw.worldMachines[dimension][machspot].id == blockstore.leverItem.id)
+                            {
+                                draw.worldMachines[dimension][machspot].linkedObject.GetComponent<LeverWorker>().Toggle();
+                            }
+                        }
+                        return false;
+                    }
+
+                    if (!machine || machThatNeedsRemesh == true)
+                    {
+                        draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
+                        if ((int)(thing.x % 16) == 15)
+                        {
+                            if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16) + 1, 0, Mathf.FloorToInt(thing.z / 16))))
+                            {
+                                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) + 1, 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
+                            }
+                        }
+                        if ((int)(thing.x % 16) == 0)
+                        {
+                            if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16) - 1, 0, Mathf.FloorToInt(thing.z / 16))))
+                            {
+                                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) - 1, 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
+                            }
+                        }
+                        if ((int)(thing.z % 16) == 15)
+                        {
+                            if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) + 1)))
+                            {
+                                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) + 1)].GetComponent<ChunkTerrain>().RebuildMesh();
+                            }
+                        }
+                        if ((int)(thing.z % 16) == 0)
+                        {
+                            if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) - 1)))
+                            {
+                                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) - 1)].GetComponent<ChunkTerrain>().RebuildMesh();
+                            }
+                        }
+                        return true;
+                    }
+                
+            }else
+            {
+                draw.GenerateNewWorldDataChunk(x / 16, z / 16, dimension);
+            }
+            }
+            else
+            {
+                draw.worldMachines.Add(dimension, new Dictionary<Vector3, Drawer.MachineNode>());
+            }
+        } else
         {
-            draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
-            if ((int)(thing.x % 16) == 15)
-            {
-                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16) + 1, 0, Mathf.FloorToInt(thing.z / 16))))
-                {
-                    draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) + 1, 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
-                }
-            }
-            if ((int)(thing.x % 16) == 0)
-            {
-                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16) - 1, 0, Mathf.FloorToInt(thing.z / 16))))
-                {
-                    draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) - 1, 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().RebuildMesh();
-                }
-            }
-            if ((int)(thing.z % 16) == 15)
-            {
-                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) + 1)))
-                {
-                    draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) + 1)].GetComponent<ChunkTerrain>().RebuildMesh();
-                }
-            }
-            if ((int)(thing.z % 16) == 0)
-            {
-                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) - 1)))
-                {
-                    draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) - 1)].GetComponent<ChunkTerrain>().RebuildMesh();
-                }
-            }
-            return true;
+            draw.worldAllChunks.Add(0, new Dictionary<Vector2, Dictionary<Vector3, Blocks.Block>>());
         }
         return false;
        
@@ -1322,6 +1362,86 @@ public class PlayerScript : MonoBehaviour
                 }
             }
         }
+
+    public void RemoveBlocks(List<Vector3> list)
+    {
+        List<GameObject> chunksToRemesh = new();
+        for (int i = 0; i < list.Count; i++)
+        {
+            Vector3 thing = new Vector3(list[i].x, list[i].y, list[i].z);
+            Vector3 machspot = thing;
+
+            if (thing.x < 0 && thing.z > 0)
+            {
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.air;
+            }
+            if (thing.x < 0 && thing.z < 0)
+            {
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3(15 + (int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.air;
+            }
+            if (thing.x > 0 && thing.z < 0)
+            {
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, 16 + (int)(thing.z % 16))] = blockstore.air;
+            }
+            if (thing.x > 0 && thing.z > 0)
+            {
+                draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))].GetComponent<ChunkTerrain>().thechunk[new Vector3((int)(thing.x % 16), (int)thing.y, (int)(thing.z % 16))] = blockstore.air;
+            }
+
+            if (!chunksToRemesh.Contains(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))]))
+            {
+                chunksToRemesh.Add(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16))]);
+            }
+            
+            if ((int)(thing.x % 16) == 15)
+            {
+                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16) + 1, 0, Mathf.FloorToInt(thing.z / 16))))
+                {
+
+                    if (!chunksToRemesh.Contains(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) + 1, 0, Mathf.FloorToInt(thing.z / 16))]))
+                    {
+                        chunksToRemesh.Add(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) + 1, 0, Mathf.FloorToInt(thing.z / 16))]);
+                    }
+                }
+            }
+            if ((int)(thing.x % 16) == 0)
+            {
+                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16) - 1, 0, Mathf.FloorToInt(thing.z / 16))))
+                {
+                    if (!chunksToRemesh.Contains(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) - 1, 0, Mathf.FloorToInt(thing.z / 16))]))
+                    {
+                        chunksToRemesh.Add(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16) - 1, 0, Mathf.FloorToInt(thing.z / 16))]);
+                    }
+                }
+            }
+            if ((int)(thing.z % 16) == 15)
+            {
+                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) + 1)))
+                {
+                    
+                    if (!chunksToRemesh.Contains(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) + 1)]))
+                    {
+                        chunksToRemesh.Add(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) + 1)]);
+                    }
+                }
+            }
+            if ((int)(thing.z % 16) == 0)
+            {
+                if (draw.chunks.ContainsKey(new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) - 1)))
+                {
+                    if (!chunksToRemesh.Contains(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) - 1)]))
+                    {
+                        chunksToRemesh.Add(draw.chunks[new Vector3(Mathf.FloorToInt(thing.x / 16), 0, Mathf.FloorToInt(thing.z / 16) - 1)]);
+                    }
+
+                }
+            }
+        }
+        for(int i = 0; i < chunksToRemesh.Count; i++)
+        {
+            chunksToRemesh[i].GetComponent<ChunkTerrain>().RebuildMesh();
+        }
+    }
 
 
 }

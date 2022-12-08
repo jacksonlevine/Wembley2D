@@ -57,6 +57,18 @@ public class LanternScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        /*if(Vector3.Distance(this.transform.position, Camera.main.transform.position) > 60)
+        {
+            if(this.transform.GetChild(0).GetComponent<Light>().enabled == true)
+            {
+                this.transform.GetChild(0).GetComponent<Light>().enabled = false;
+            }
+        } else
+        {
+            if (this.transform.GetChild(0).GetComponent<Light>().enabled == false)
+            {
+                this.transform.GetChild(0).GetComponent<Light>().enabled = true;
+            }
+        }*/
     }
 }
