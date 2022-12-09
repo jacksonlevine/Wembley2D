@@ -101,10 +101,10 @@ MonoBehaviour:
     m_NumAlphaKeys: 2
   UnderWaterFog:
     serializedVersion: 2
-    key0: {r: 0, g: 0.026435535, b: 0.26415092, a: 1}
+    key0: {r: 0.0033374808, g: 0.027629746, b: 0.23584908, a: 1}
     key1: {r: 0, g: 0.07589414, b: 0.7264151, a: 1}
     key2: {r: 0, g: 0.10273981, b: 1, a: 0}
-    key3: {r: 0, g: 0.027450982, b: 0.2627451, a: 0}
+    key3: {r: 0, g: 0.023655316, b: 0.2264151, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
     key5: {r: 0, g: 0, b: 0, a: 0}
     key6: {r: 0, g: 0, b: 0, a: 0}
