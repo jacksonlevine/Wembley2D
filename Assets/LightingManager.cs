@@ -9,6 +9,8 @@ public class LightingManager : MonoBehaviour
     //Variables
     [SerializeField, Range(0, 24)] private float TimeOfDay;
 
+    public PlayerScript player;
+    public float defaultDense;
 
     private void Update()
     {
@@ -32,8 +34,17 @@ public class LightingManager : MonoBehaviour
     private void UpdateLighting(float timePercent)
     {
         //Set ambient and fog
-        RenderSettings.ambientLight = Preset.AmbientColor.Evaluate(timePercent);
-        RenderSettings.fogColor = Preset.FogColor.Evaluate(timePercent);
+        if (!player.isInWater)
+        {
+            RenderSettings.ambientLight = Preset.AmbientColor.Evaluate(timePercent);
+            RenderSettings.fogColor = Preset.FogColor.Evaluate(timePercent);
+            RenderSettings.fogDensity = defaultDense;
+        } else
+        {
+            RenderSettings.ambientLight = Preset.UnderWaterLight.Evaluate(timePercent);
+            RenderSettings.fogColor = Preset.UnderWaterFog.Evaluate(timePercent);
+            RenderSettings.fogDensity = defaultDense * 12;
+        }
 
         //If the directional light is set then rotate and set it's color, I actually rarely use the rotation because it casts tall shadows unless you clamp the value
         if (DirectionalLight != null)

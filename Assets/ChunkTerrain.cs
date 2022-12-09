@@ -718,7 +718,7 @@ public class ChunkTerrain : MonoBehaviour
 
         this.transform.GetChild(1).gameObject.GetComponent<MeshRenderer>().enabled = true;
         this.transform.GetChild(1).gameObject.GetComponent<MeshFilter>().mesh = watermesh;
-        this.transform.GetChild(1).gameObject.GetComponent<MeshCollider>().sharedMesh = watermesh;
+        //this.transform.GetChild(1).gameObject.GetComponent<MeshCollider>().sharedMesh = watermesh;
 
         this.gameObject.GetComponent<MeshRenderer>().enabled = true;
         this.gameObject.GetComponent<MeshFilter>().mesh = mesh;

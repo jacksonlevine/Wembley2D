@@ -18,6 +18,7 @@ public class PlayerScript : MonoBehaviour
 
     public Color[] lampColors;
 
+    public bool isInWater = false;
 
     private float walktime = 0;
 
@@ -736,6 +737,7 @@ public class PlayerScript : MonoBehaviour
         //Debug.Log(thing.x + " " + thing.y + " " + thing.z);
     }
 
+    int gravity = 15;
     public bool AddToInventory(List<ItemSlot> inv, int type, int amount)
     {
         int slottoadd = -1;
@@ -793,7 +795,7 @@ public class PlayerScript : MonoBehaviour
         }
 
     }
-
+    bool waterentered = true;
     bool letMeDown = false;
     void MovementStuff()
     {
@@ -810,15 +812,38 @@ public class PlayerScript : MonoBehaviour
             }
         }
 
+        if(this.isSwimming)
+        {
+            this.gravity = 7;
+        }else
+        {
+            this.gravity = 15;
+        }
+
 
         if (Time.time > 20 || letMeDown)
         {
             if (!cc.isGrounded && this.transform.position.y >= 1)
             {
-                timefalling += Time.deltaTime * 230;
-                velocity.y -= Time.deltaTime * (15 + timefalling);
+                if (!isSwimming)
+                {
+                    timefalling += Time.deltaTime * 230;
+                } else
+                {
+                    timefalling = 1;
+                }
+                velocity.y -= Time.deltaTime * (gravity + timefalling);
                 cc.Move(velocity / 100);
             }
+        }
+        if(isSwimming && waterentered == true)
+        {
+            this.transform.GetChild(1).GetComponent<ParticleSystem>().Play();
+            waterentered = false;
+        }
+        if(!isSwimming && waterentered == false)
+        {
+            waterentered = true;
         }
 
         if(Input.GetKeyDown(KeyCode.Q))
@@ -850,13 +875,22 @@ public class PlayerScript : MonoBehaviour
         ray.direction = transform.up * -1;
         RaycastHit hit = new();
         Physics.Raycast(ray, out hit, 1.5f);
-        if (cc.isGrounded || this.transform.position.y <= 1.1 || hit.collider != null)
+        if (cc.isGrounded || this.transform.position.y <= 1.1 || hit.collider != null || isSwimming)
         {
-            timefalling = 0;
-            velocity.y = Mathf.Clamp(velocity.y, 0, 10);
+            if (!isSwimming)
+            {
+                timefalling = 0;
+                velocity.y = Mathf.Clamp(velocity.y, 0, 10);
+            }
             if (Input.GetKey (KeyCode.Space))
             {
-                velocity.y += 40f;
+                if ((cc.isGrounded && !isSwimming) || (hit.collider != null && !isSwimming))
+                {
+                    velocity.y += 35f;
+                } else
+                {
+                    velocity.y += 5f;
+                }
             }
         }
 
@@ -956,15 +990,123 @@ public class PlayerScript : MonoBehaviour
         movement /= 4;
     }
 
+    /*private void OnTriggerEnter(Collider other)
+    {
+        this.isInWater= true;
+    }
+
+
+    private void OnTriggerExit(Collider other)
+    {
+        this.isInWater = false;
+    }*/
 
 
     private int selected = 0;
     float timefalling = 0;
     Vector3 rotation = new();
     Vector3 movement = new();
+    public bool isSwimming = false;
     public List<Vector2> neededChunks = new();
     void Update()
     {
+        if (draw.worldAllChunks.ContainsKey(dimension))
+        {
+            if (draw.worldAllChunks[dimension].ContainsKey(new Vector2(Mathf.FloorToInt(this.transform.position.x/16), Mathf.FloorToInt(this.transform.position.z / 16))))
+            {
+                var thing = this.transform.position+ transform.up;
+                var thing1 = this.transform.position - transform.up;
+                if (thing.x > 0 && thing.z > 0) {
+                    if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))].ContainsKey(Vector3Int.FloorToInt(new Vector3(thing.x%16, thing.y, thing.z%16)))) {
+                        if(draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))][Vector3Int.FloorToInt(new Vector3(thing.x % 16, thing.y, thing.z % 16))].id == blockstore.water.id)
+                        {
+                            this.isInWater = true;
+                        } else
+                        {
+                            this.isInWater = false;
+                        }
+
+                    }
+                    if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))].ContainsKey(Vector3Int.FloorToInt(new Vector3(thing1.x % 16, thing1.y, thing1.z % 16))))
+                    {
+                        if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))][Vector3Int.FloorToInt(new Vector3(thing1.x % 16, thing1.y, thing1.z % 16))].id == blockstore.water.id)
+                        {
+                            this.isSwimming = true;
+                        }
+                        else
+                        {
+                            this.isSwimming = false;
+                        }
+
+                    }
+                }
+                if(thing.x < 0 && thing.z < 0)
+                {
+                    if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))].ContainsKey(Vector3Int.FloorToInt(new Vector3(15 + (thing.x % 16), thing.y, 15 + (thing.z % 16)))))
+                    {
+                        if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))][Vector3Int.FloorToInt(new Vector3(15 + (thing.x % 16), thing.y, 15+ (thing.z % 16)))].id == blockstore.water.id)
+                        {
+                            this.isInWater = true;
+                        }
+                        else
+                        {
+                            this.isInWater = false;
+                        }
+                    }
+                    if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))].ContainsKey(Vector3Int.FloorToInt(new Vector3(15 + (thing1.x % 16), thing1.y, 15 + (thing1.z % 16)))))
+                    {
+                        if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))][Vector3Int.FloorToInt(new Vector3(15 + (thing1.x % 16), thing1.y, 15 + (thing1.z % 16)))].id == blockstore.water.id)
+                        {
+                            this.isSwimming = true;
+                        }
+                        else
+                        {
+                            this.isSwimming = false;
+                        }
+                    }
+                }
+                if(thing.x > 0 && thing.z < 0)
+                {
+                    if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))].ContainsKey(Vector3Int.FloorToInt(new Vector3(thing.x % 16, thing.y, 15 + (thing.z % 16)))))
+                    {
+                        if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))][Vector3Int.FloorToInt(new Vector3(thing.x % 16, thing.y, 15 + (thing.z % 16)))].id == blockstore.water.id)
+                        {
+                            this.isInWater = true;
+                        }
+                        else
+                        {
+                            this.isInWater = false;
+                        }
+                    }
+                    if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))].ContainsKey(Vector3Int.FloorToInt(new Vector3(thing1.x % 16, thing1.y, 15 + (thing1.z % 16)))))
+                    {
+                        if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))][Vector3Int.FloorToInt(new Vector3(thing1.x % 16, thing1.y, 15 + (thing1.z % 16)))].id == blockstore.water.id)
+                        {
+                            this.isSwimming = true;
+                        }
+                        else
+                        {
+                            this.isSwimming = false;
+                        }
+                    }
+                }
+                if(thing.x < 0 && thing.z > 0)
+                {
+                    if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))].ContainsKey(Vector3Int.FloorToInt(new Vector3(15 + (thing.x % 16), thing.y,thing.z % 16))))
+                    {
+                        if (draw.worldAllChunks[dimension][new Vector2(Mathf.FloorToInt(this.transform.position.x / 16), Mathf.FloorToInt(this.transform.position.z / 16))][Vector3Int.FloorToInt(new Vector3(15 + (thing.x % 16), thing.y, thing.z % 16))].id == blockstore.water.id)
+                        {
+                            this.isInWater = true;
+                        }
+                        else
+                        {
+                            this.isInWater = false;
+                        }
+                    }
+                }
+            }
+        }
+
         if (myInv[selected].id == blockstore.lanternItem.id)
         {
             this.GetComponentInChildren<Light>().enabled = true;
