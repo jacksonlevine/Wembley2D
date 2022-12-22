@@ -21,11 +21,6 @@ public class Blocks : MonoBehaviour
     public Block dirt;
 
     public Block well;
-    public GameObject wellobj;
-
-    public Block trunk;
-    public GameObject trunkobj;
-
 
     public Block gearblock;
     public GameObject gear;
@@ -46,7 +41,7 @@ public class Blocks : MonoBehaviour
 
     public List<int> itemIDs = new();
 
-    
+    public GameObject wellobj;
 
 
 
@@ -122,14 +117,6 @@ public class Blocks : MonoBehaviour
         blocks.Add(well.id, well);
         modelIDs.Add(9);
         IDtoModel.Add(well.id, wellobj);
-
-        trunk = new Block();
-        trunk.id = 10;
-        blocks.Add(trunk.id, trunk);
-        modelIDs.Add(10);
-        IDtoModel.Add(trunk.id, trunkobj);
-
-        //building the mesh for lever
 
         verts.Add(new Vector3(0, 0, 0)); //0
         verts.Add(new Vector3(0, 0.2f, 0)); //1
